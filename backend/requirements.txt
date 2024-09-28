@@ -37,8 +37,10 @@ pgvector==0.1.8
 postgrest==0.16.11
 psycopg2-binary==2.9.9
 pydantic==2.9.2
+pydantic-settings==2.5.2
 pydantic_core==2.23.4
 python-dateutil==2.9.0.post0
+python-dotenv==1.0.1
 PyYAML==6.0.2
 realtime==2.0.5
 requests==2.32.3
