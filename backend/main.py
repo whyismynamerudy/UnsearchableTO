@@ -35,6 +35,26 @@ async def test():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/street_view_images")
+async def get_street_view_images():
+    # Hardcoded longitude and latitude values
+    longitude_min = -79.393826
+    longitude_max = -79.386533
+    latitude_min = 43.649678
+    latitude_max = 43.654901
+
+    try:
+        response = supabase_client.table("street_view_images").select("*").filter(
+            "longitude", "gte", longitude_min
+        ).filter("longitude", "lte", longitude_max).filter(
+            "latitude", "gte", latitude_min
+        ).filter("latitude", "lte", latitude_max).execute()
+        
+        return response.data  # Return the filtered rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/search")
 async def search(query: SearchQuery):
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
