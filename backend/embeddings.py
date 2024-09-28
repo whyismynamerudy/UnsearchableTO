@@ -1,4 +1,3 @@
-import os
 import cohere
 from config import settings
 
