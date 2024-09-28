@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from config import settings
+from supabase_settings import supabase_client
+import cohere
+import vecs
 
 app = FastAPI()
 co = cohere.Client(api_key=settings.COHERE_API_KEY)
@@ -22,6 +25,57 @@ class SearchQuery(BaseModel):
 async def root():
     return {"message": "Welcome to the search API"}
 
+
+@app.get("/test")
+async def test():
+    try:
+        response = supabase_client.table("street_view_images").select("*").limit(10).execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/street_view_images")
+async def get_street_view_images():
+    # Hardcoded longitude and latitude values
+    longitude_min = -79.393826
+    longitude_max = -79.386533
+    latitude_min = 43.649678
+    latitude_max = 43.654901
+
+    try:
+        response = supabase_client.table("street_view_images").select("*").filter(
+            "longitude", "gte", longitude_min
+        ).filter("longitude", "lte", longitude_max).filter(
+            "latitude", "gte", latitude_min
+        ).filter("latitude", "lte", latitude_max).execute()
+        
+        return response.data  # Return the filtered rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/street_view_images_hundred")
+async def get_street_view_images_hundred():
+    # Hardcoded longitude and latitude values
+    longitude_min = -79.393826
+    longitude_max = -79.386533
+    latitude_min = 43.649678
+    latitude_max = 43.654901
+
+    try:
+        response = supabase_client.table("street_view_images").select("*").filter(
+            "longitude", "gte", longitude_min
+        ).filter("longitude", "lte", longitude_max).filter(
+            "latitude", "gte", latitude_min
+        ).filter("latitude", "lte", latitude_max).limit(100).execute()
+        
+        return response.data  # Return the filtered rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
+
+
 @app.get("/search")
 async def search(query: SearchQuery):
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
@@ -35,13 +89,14 @@ async def search(query: SearchQuery):
         embedding = res.embeddings.float
 
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
-        docs.search(
+        result_ids = docs.query(
             data=embedding,
             limit=10,
             measure="cosine_distance",
         )
 
-    return {"results": "Search results will be implemented here"}
+    results = supabase_client.table("street_view_images").select("*").in_("id", result_ids).execute()
+    return {"results": results.data}
 
 if __name__ == "__main__":
     import uvicorn

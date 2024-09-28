@@ -1,8 +1,10 @@
-import * as dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { along, featureCollection, length, lineString } from "@turf/turf";
 import axios from "axios";
+import crypto from "crypto";
+import * as dotenv from "dotenv";
 import { Feature, FeatureCollection, LineString, Point } from "geojson";
+import pLimit from "p-limit";
 
 dotenv.config();
 
@@ -10,6 +12,28 @@ const key = process.env.GOOGLE_API_KEY || "";
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_KEY || "";
 const storageBucket = process.env.STORAGE_BUCKET || "";
+const urlSigningSecret = process.env.GOOGLE_URL_SIGNING_SECRET || ""; // Add this line
+
+const concurrencyLimit = 50;
+
+function signUrl(url: string, secret: string): string {
+  const urlObj = new URL(url);
+  const pathAndQuery = urlObj.pathname + urlObj.search;
+
+  // Decode the secret key
+  const decodedSecret = secret.replace(/-/g, "+").replace(/_/g, "/");
+  const binarySecret = Buffer.from(decodedSecret, "base64");
+
+  // Create the signature using HMAC-SHA1
+  const signature = crypto
+    .createHmac("sha1", binarySecret)
+    .update(pathAndQuery)
+    .digest("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  return signature;
+}
 
 async function downloadStreetViewImageToSupabase(options: {
   longitude: number;
@@ -19,7 +43,6 @@ async function downloadStreetViewImageToSupabase(options: {
   heading?: number;
   pitch?: number;
   key: string;
-  signature?: string;
   supabaseUrl: string;
   supabaseKey: string;
   storageBucket: string;
@@ -32,23 +55,23 @@ async function downloadStreetViewImageToSupabase(options: {
     heading = 170,
     pitch = 0,
     key,
-    signature,
     supabaseUrl,
     supabaseKey,
     storageBucket,
   } = options;
 
   const location = `${latitude},${longitude}`;
-
   const baseUrl = "https://maps.googleapis.com/maps/api/streetview";
 
   let url = `${baseUrl}?size=${size}&location=${encodeURIComponent(
     location
   )}&fov=${fov}&heading=${heading}&pitch=${pitch}&key=${key}`;
 
-  if (signature) {
-    url += `&signature=${signature}`;
-  }
+  // Generate the signature
+  const signature = signUrl(url, urlSigningSecret);
+
+  // Append the signature to the URL
+  url += `&signature=${signature}`;
 
   try {
     const response = await axios({
@@ -290,30 +313,36 @@ async function processCoordinates() {
   // Initialize Supabase client
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Process each coordinate
-  for (const coord of shuffledCoordinates) {
-    try {
-      await downloadStreetViewImageToSupabaseFourDirections({
+  // Set the concurrency limit (adjust as needed based on API limits)
+  const limit = pLimit(concurrencyLimit);
+
+  // Create an array of promise-returning functions with concurrency control
+  const tasks = shuffledCoordinates.map((coord) =>
+    limit(() =>
+      downloadStreetViewImageToSupabaseFourDirections({
         latitude: coord.latitude,
         longitude: coord.longitude,
         key,
         supabaseUrl,
         supabaseKey,
         storageBucket,
-      });
-      console.log(
-        `Successfully processed ${coord.latitude}, ${coord.longitude}`
-      );
-    } catch (error) {
-      console.error(
-        `Error processing ${coord.latitude}, ${coord.longitude}:`,
-        error
-      );
-    }
+      })
+        .then(() => {
+          console.log(
+            `Successfully processed ${coord.latitude}, ${coord.longitude}`
+          );
+        })
+        .catch((error) => {
+          console.error(
+            `Error processing ${coord.latitude}, ${coord.longitude}:`,
+            error
+          );
+        })
+    )
+  );
 
-    // Rate limiting
-    await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms delay
-  }
+  // Wait for all tasks to complete
+  await Promise.all(tasks);
 }
 
 processCoordinates();
