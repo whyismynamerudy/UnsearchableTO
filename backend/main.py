@@ -68,13 +68,14 @@ async def search(query: SearchQuery):
         embedding = res.embeddings.float
 
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
-        docs.search(
+        result_ids = docs.query(
             data=embedding,
             limit=10,
             measure="cosine_distance",
         )
 
-    return {"results": "Search results will be implemented here"}
+    results = supabase_client.table("street_view_images").select("*").in_("id", result_ids).execute()
+    return {"results": results.data}
 
 if __name__ == "__main__":
     import uvicorn
