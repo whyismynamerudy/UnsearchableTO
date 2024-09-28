@@ -24,14 +24,22 @@ async def root():
 
 @app.get("/search")
 async def search(query: SearchQuery):
+    with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
     
-    res = co.embed(
-        texts=[query.q],
-        model="embed-english-v3.0",
-        input_type="search_query",
-        embedding_types=["float"],
-    )
-    embeddings = res.embeddings.float
+        res = co.embed(
+            texts=[query.q],
+            model="embed-english-v3.0",
+            input_type="search_query",
+            embedding_types=["float"],
+        )
+        embedding = res.embeddings.float
+
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
+        docs.search(
+            data=embedding,
+            limit=10,
+            measure="cosine_distance",
+        )
 
     return {"results": "Search results will be implemented here"}
 
