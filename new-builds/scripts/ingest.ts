@@ -1,12 +1,15 @@
+import * as dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { along, featureCollection, length, lineString } from "@turf/turf";
 import axios from "axios";
 import { Feature, FeatureCollection, LineString, Point } from "geojson";
 
-const key = "YOUR_GOOGLE_API_KEY_HERE";
-const supabaseUrl = "YOUR_SUPABASE_URL_HERE";
-const supabaseKey = "YOUR_SUPABASE_KEY_HERE";
-const storageBucket = "YOUR_STORAGE_BUCKET_HERE";
+dotenv.config();
+
+const key = process.env.GOOGLE_API_KEY || "";
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_KEY || "";
+const storageBucket = process.env.STORAGE_BUCKET || "";
 
 async function downloadStreetViewImageToSupabase(options: {
   longitude: number;
