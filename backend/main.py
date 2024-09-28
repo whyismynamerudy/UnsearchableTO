@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from config import settings
+from supabase import supabase_client
 
 app = FastAPI()
 co = cohere.Client(api_key=settings.COHERE_API_KEY)
@@ -21,6 +22,16 @@ class SearchQuery(BaseModel):
 @app.get("/")
 async def root():
     return {"message": "Welcome to the search API"}
+
+
+@app.get("/test")
+async def test():
+    try:
+        response = supabase_client.table("street_view_images").select("*").limit(10).execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/search")
 async def search(query: SearchQuery):
