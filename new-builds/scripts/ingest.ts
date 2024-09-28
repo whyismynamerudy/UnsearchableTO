@@ -3,12 +3,10 @@ import { along, featureCollection, length, lineString } from "@turf/turf";
 import axios from "axios";
 import { Feature, FeatureCollection, LineString, Point } from "geojson";
 
-// Replace with your actual API keys and URLs
-const key = "AIzaSyDyTZSSy9DZOSegEO7g2D6Z5cSWalQDOYA";
-const supabaseUrl = "https://wskqzaecngcbpipswona.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indza3F6YWVjbmdjYnBpcHN3b25hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzU0NDA1NSwiZXhwIjoyMDQzMTIwMDU1fQ.113j6NQNQz1seXyme5LFuHpyRFWi0w93Zu6_RSreT6Y";
-const storageBucket = "images";
+const key = "YOUR_GOOGLE_API_KEY_HERE";
+const supabaseUrl = "YOUR_SUPABASE_URL_HERE";
+const supabaseKey = "YOUR_SUPABASE_KEY_HERE";
+const storageBucket = "YOUR_STORAGE_BUCKET_HERE";
 
 async function downloadStreetViewImageToSupabase(options: {
   longitude: number;
