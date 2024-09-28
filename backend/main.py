@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from config import settings
-from supabase import supabase_client
+from supabase_settings import supabase_client
 
 app = FastAPI()
 co = cohere.Client(api_key=settings.COHERE_API_KEY)
