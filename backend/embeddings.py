@@ -1,9 +1,10 @@
 import os
 import cohere
 from dotenv import load_dotenv
+from config import settings
 
-load_dotenv()
-api_key = os.getenv("COHERE_API_KEY")
+# load_dotenv()
+# api_key = os.getenv("COHERE_API_KEY")
 
 
 def load_captions():
@@ -19,7 +20,7 @@ def save_embeddings(batch, embeddings):
 
 
 def main():
-    co = cohere.ClientV2(api_key)
+    co = cohere.ClientV2(api_key=settings.COHERE_API_KEY)
     captions = load_captions()
 
     batch_size = 48
