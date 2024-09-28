@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from config import settings
 
 app = FastAPI()
+co = cohere.Client(api_key=settings.COHERE_API_KEY)
 
 # Configure CORS
 app.add_middleware(
@@ -12,6 +15,11 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+<<<<<<< HEAD
+=======
+class SearchQuery(BaseModel):
+    q: str = Field(..., min_length=1, max_length=100, description="The search phrase")
+>>>>>>> dc689f4ba59484eb4681f29941311dad915889f7
 
 @app.get("/")
 async def root():
@@ -19,7 +27,7 @@ async def root():
 
 
 @app.get("/search")
-async def search():
+async def search(query: SearchQuery):
     # Placeholder for search implementation
     return {"results": "Search results will be implemented here"}
 
