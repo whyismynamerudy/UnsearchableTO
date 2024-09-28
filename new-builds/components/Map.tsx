@@ -1,6 +1,7 @@
 import React from 'react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import MapSheet from './MapSheet';
+import { MarkerDetails } from '@/app/page';
 
 const containerStyle = {
   width: '100%',
@@ -27,13 +28,7 @@ const options = {
 };
 
 interface MapProps {
-  markers?: { lat: number; lng: number }[];
-}
-
-interface MarkerDetails {
-  lat: number;
-  lng: number;
-  details?: string;
+  markers?: MarkerDetails[];
 }
 
 const Map: React.FC<MapProps> = ({ markers }) => {
@@ -81,21 +76,17 @@ const Map: React.FC<MapProps> = ({ markers }) => {
       {markers?.map((marker, index) => (
         <Marker
           key={index}
-          position={{ lat: marker.lat, lng: marker.lng }}
-          //   onClick={() => openStreetView(marker.lat, marker.lng)}
-          onClick={() =>
-            handleMarkerClick({
-              lat: marker.lat,
-              lng: marker.lng,
-            })
-          }
+          position={{ lat: marker.latitude, lng: marker.longitude }}
+          onClick={() => handleMarkerClick(marker)}
         />
       ))}
-      <MapSheet
-        isOpen={isSheetOpen}
-        onClose={handleClose}
-        content={selectedContent}
-      />
+      {selectedContent && (
+        <MapSheet
+          isOpen={isSheetOpen}
+          onClose={handleClose}
+          content={selectedContent}
+        />
+      )}
     </GoogleMap>
   ) : (
     <div>Loading...</div>

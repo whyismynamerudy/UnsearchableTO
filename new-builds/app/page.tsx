@@ -4,25 +4,49 @@ import Map from '@/components/Map';
 import SearchBar from '@/components/SearchBar';
 import { useState } from 'react';
 
-export default function Home() {
-  const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([]);
+export interface MarkerDetails {
+  image_id: string;
+  longitude: number;
+  latitude: number;
+  heading: number;
+  pitch: number;
+  captured_at: string;
+  fov: number;
+  image_url: string;
+  description: string | null;
+}
 
-  const handleSearch = (query: string) => {
+export default function Home() {
+  const [markers, setMarkers] = useState<MarkerDetails[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSearch = async (query: string) => {
     console.log('Search query:', query);
 
-    const results = query
-      ? [
-          { lat: 43.65107, lng: -79.347015 },
-          { lat: 43.70011, lng: -79.4163 },
-          { lat: 43.6419722, lng: -79.3870063 },
-        ]
-      : [];
+    if (!query) {
+      setMarkers([]); // Clear markers if the query is empty
+      return;
+    }
 
-    setMarkers(results);
+    try {
+      const response = await fetch('https://new-builds-2024.vercel.app/test');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const results = await response.json();
+
+      setMarkers(results);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching markers:', error);
+      setError('Failed to fetch markers. Please try again.');
+      setMarkers([]);
+    }
   };
   return (
     <div>
       <SearchBar onSearch={handleSearch} />
+      {error && <p className='text-red-500'>{error}</p>}
       <Map markers={markers} />
     </div>
   );
