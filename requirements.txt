@@ -1,3 +1,5 @@
 cohere
 pandas
 numpy
+pydantic_settings
+pydantic
