@@ -20,6 +20,7 @@ const SearchBar: React.FC<{ onSearch: (query: string) => void }> = ({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className='border border-gray-300 rounded-md p-2 w-full'
+        style={{ fontSize: '16px' }}
       />
       <Button
         type='submit'

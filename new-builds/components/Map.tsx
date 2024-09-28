@@ -1,11 +1,11 @@
-import { MarkerDetails } from "@/app/page";
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
-import React from "react";
-import MapSheet from "./MapSheet";
+import { MarkerDetails } from '@/app/page';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import React from 'react';
+import MapSheet from './MapSheet';
 
 const containerStyle = {
-  width: "100%",
-  height: "95vh",
+  width: '100%',
+  height: '95vh',
 };
 
 const center = {
@@ -33,10 +33,10 @@ interface MapProps {
 
 const Map: React.FC<MapProps> = ({ markers }) => {
   const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
+    id: 'google-map-script',
     googleMapsApiKey:
       process.env.REACT_APP_GOOGLE_MAPS_API ||
-      "AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8",
+      'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
   });
 
   const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
@@ -63,6 +63,25 @@ const Map: React.FC<MapProps> = ({ markers }) => {
     setSelectedContent(null); // Reset the selected content when closing
     setIsSheetOpen(false); // Close the sheet
   };
+
+  const [markersLoaded, setMarkersLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (markers && markers.length > 0) {
+      setMarkersLoaded(true); // Markers are now loaded
+    }
+  }, [markers]);
+
+  React.useEffect(() => {
+    if (map && markersLoaded && markers) {
+      const newCenter = {
+        lat: markers[0].latitude,
+        lng: markers[0].longitude,
+      };
+      map.setZoom(14);
+      map.panTo(newCenter);
+    }
+  }, [map, markersLoaded, markers]);
 
   return isLoaded ? (
     <GoogleMap
