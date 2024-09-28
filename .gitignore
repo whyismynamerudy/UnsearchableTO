@@ -1,17 +1,19 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 new-builds/node_modules
-new-builds/.pnp
-new-builds/.pnp.js
-new-builds/.yarn/install-state.gz
 
 # testing
 new-builds/coverage
 
 # next.js
-new-builds/.next/
-new-builds/out/
+new-builds/.next
+/.next/
+/out/
 
 # production
 new-builds/build
