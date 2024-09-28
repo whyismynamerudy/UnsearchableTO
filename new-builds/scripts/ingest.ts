@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { along, featureCollection, length, lineString } from "@turf/turf";
 import axios from "axios";
+import crypto from "crypto";
 import * as dotenv from "dotenv";
 import { Feature, FeatureCollection, LineString, Point } from "geojson";
 import pLimit from "p-limit";
@@ -11,8 +12,28 @@ const key = process.env.GOOGLE_API_KEY || "";
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_KEY || "";
 const storageBucket = process.env.STORAGE_BUCKET || "";
+const urlSigningSecret = process.env.GOOGLE_URL_SIGNING_SECRET || ""; // Add this line
 
 const concurrencyLimit = 50;
+
+function signUrl(url: string, secret: string): string {
+  const urlObj = new URL(url);
+  const pathAndQuery = urlObj.pathname + urlObj.search;
+
+  // Decode the secret key
+  const decodedSecret = secret.replace(/-/g, "+").replace(/_/g, "/");
+  const binarySecret = Buffer.from(decodedSecret, "base64");
+
+  // Create the signature using HMAC-SHA1
+  const signature = crypto
+    .createHmac("sha1", binarySecret)
+    .update(pathAndQuery)
+    .digest("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  return signature;
+}
 
 async function downloadStreetViewImageToSupabase(options: {
   longitude: number;
@@ -22,7 +43,6 @@ async function downloadStreetViewImageToSupabase(options: {
   heading?: number;
   pitch?: number;
   key: string;
-  signature?: string;
   supabaseUrl: string;
   supabaseKey: string;
   storageBucket: string;
@@ -35,23 +55,23 @@ async function downloadStreetViewImageToSupabase(options: {
     heading = 170,
     pitch = 0,
     key,
-    signature,
     supabaseUrl,
     supabaseKey,
     storageBucket,
   } = options;
 
   const location = `${latitude},${longitude}`;
-
   const baseUrl = "https://maps.googleapis.com/maps/api/streetview";
 
   let url = `${baseUrl}?size=${size}&location=${encodeURIComponent(
     location
   )}&fov=${fov}&heading=${heading}&pitch=${pitch}&key=${key}`;
 
-  if (signature) {
-    url += `&signature=${signature}`;
-  }
+  // Generate the signature
+  const signature = signUrl(url, urlSigningSecret);
+
+  // Append the signature to the URL
+  url += `&signature=${signature}`;
 
   try {
     const response = await axios({
