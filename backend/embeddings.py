@@ -65,8 +65,8 @@ def main():
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
         docs.create_index(
-            method=IndexMethod.hnsw,
-            measure=IndexMeasure.cosine_distance,
+            method=vecs.IndexMethod.hnsw,
+            measure=vecs.IndexMeasure.cosine_distance,
         )
 
     
