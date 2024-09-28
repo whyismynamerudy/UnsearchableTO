@@ -1,8 +1,9 @@
-import * as dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { along, featureCollection, length, lineString } from "@turf/turf";
 import axios from "axios";
+import * as dotenv from "dotenv";
 import { Feature, FeatureCollection, LineString, Point } from "geojson";
+import pLimit from "p-limit";
 
 dotenv.config();
 
@@ -10,6 +11,8 @@ const key = process.env.GOOGLE_API_KEY || "";
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_KEY || "";
 const storageBucket = process.env.STORAGE_BUCKET || "";
+
+const concurrencyLimit = 50;
 
 async function downloadStreetViewImageToSupabase(options: {
   longitude: number;
@@ -290,30 +293,36 @@ async function processCoordinates() {
   // Initialize Supabase client
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Process each coordinate
-  for (const coord of shuffledCoordinates) {
-    try {
-      await downloadStreetViewImageToSupabaseFourDirections({
+  // Set the concurrency limit (adjust as needed based on API limits)
+  const limit = pLimit(concurrencyLimit);
+
+  // Create an array of promise-returning functions with concurrency control
+  const tasks = shuffledCoordinates.map((coord) =>
+    limit(() =>
+      downloadStreetViewImageToSupabaseFourDirections({
         latitude: coord.latitude,
         longitude: coord.longitude,
         key,
         supabaseUrl,
         supabaseKey,
         storageBucket,
-      });
-      console.log(
-        `Successfully processed ${coord.latitude}, ${coord.longitude}`
-      );
-    } catch (error) {
-      console.error(
-        `Error processing ${coord.latitude}, ${coord.longitude}:`,
-        error
-      );
-    }
+      })
+        .then(() => {
+          console.log(
+            `Successfully processed ${coord.latitude}, ${coord.longitude}`
+          );
+        })
+        .catch((error) => {
+          console.error(
+            `Error processing ${coord.latitude}, ${coord.longitude}:`,
+            error
+          );
+        })
+    )
+  );
 
-    // Rate limiting
-    await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms delay
-  }
+  // Wait for all tasks to complete
+  await Promise.all(tasks);
 }
 
 processCoordinates();
