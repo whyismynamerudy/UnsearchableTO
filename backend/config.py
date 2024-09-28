@@ -4,6 +4,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     COHERE_API_KEY: str
+    DB_CONNECTION_STRING: str
     # Add other configuration variables here, e.g.:
     # DATABASE_URL: str
     # SECRET_KEY: str

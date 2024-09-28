@@ -15,24 +15,34 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-<<<<<<< HEAD
-=======
 class SearchQuery(BaseModel):
     q: str = Field(..., min_length=1, max_length=100, description="The search phrase")
->>>>>>> dc689f4ba59484eb4681f29941311dad915889f7
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to the search API"}
 
-
 @app.get("/search")
 async def search(query: SearchQuery):
-    # Placeholder for search implementation
-    return {"results": "Search results will be implemented here"}
+    with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
+    
+        res = co.embed(
+            texts=[query.q],
+            model="embed-english-v3.0",
+            input_type="search_query",
+            embedding_types=["float"],
+        )
+        embedding = res.embeddings.float
 
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
+        docs.search(
+            data=embedding,
+            limit=10,
+            measure="cosine_distance",
+        )
+
+    return {"results": "Search results will be implemented here"}
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
