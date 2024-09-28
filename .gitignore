@@ -1,20 +1,20 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+new-builds/node_modules
+new-builds/.pnp
+new-builds/.pnp.js
+new-builds/.yarn/install-state.gz
 
 # testing
-/coverage
+new-builds/coverage
 
 # next.js
-/.next/
-/out/
+new-builds/.next/
+new-builds/out/
 
 # production
-/build
+new-builds/build
 
 # misc
 .DS_Store
