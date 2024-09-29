@@ -3,6 +3,7 @@ import vecs
 import requests
 from config import settings
 import numpy as np
+import time
 
 
 def load_captions():
@@ -24,7 +25,6 @@ def save_embeddings(image_ids, embeddings):
 
         records = []
         for image_id, embedding in zip(image_ids, embeddings):
-            print(image_id)
             records.append((image_id, np.array(embedding), {}))
 
         docs.upsert(records)
@@ -37,10 +37,10 @@ def main():
     batch_size = 96
 
     for i in range(0, len(captions), batch_size):
+        batch_start_time = time.time()
         batch = captions[i : i + batch_size]
         image_ids = [caption["image_id"] for caption in batch]
         batch_texts = [caption["description"] for caption in batch]
-        print(batch_texts)
 
         response = co.embed(
             texts=batch_texts,
@@ -51,12 +51,18 @@ def main():
 
         save_embeddings(image_ids, response.embeddings.float)
 
+        batch_end_time = time.time()
+        batch_duration = batch_end_time - batch_start_time
+        print(f"Batch {i // batch_size + 1} completed in {batch_duration:.2f} seconds.")
+
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         docs.create_index(
             method=vecs.IndexMethod.hnsw,
             measure=vecs.IndexMeasure.cosine_distance,
         )
+    
+    print("Embeddings saved!")
 
 
 if __name__ == "__main__":
