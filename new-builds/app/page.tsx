@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import CameraUpload from '@/components/CameraUpload';
 import Map from '@/components/Map';
 import SearchBar from '@/components/SearchBar';
-import CameraUpload from '@/components/CameraUpload';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 export interface MarkerDetails {
   image_id: string;
@@ -69,8 +69,11 @@ export default function Home() {
   return (
     <div className='min-h-screen bg-[#1a202c] text-[#e2e8f0]'>
       <header className='bg-[#2d3748] shadow-lg'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between'>
           <h1 className='text-3xl font-bold text-white'>TorontoVision</h1>
+          <div className='text-xl font-medium text-[#4fd1c5] animate-shimmer'>
+            511k+ views indexed
+          </div>
         </div>
       </header>
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
