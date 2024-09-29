@@ -134,7 +134,17 @@ async def get_street_view_images_without_embeddings():
         # First, get all image_ids that already have embeddings
         with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
             docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
-            existing_embeddings = set(docs.peek(limit=1000000)['id'])  # Adjust limit if needed
+            existing_embeddings = set()
+            
+            # Fetch all IDs in batches
+            batch_size = 1000
+            offset = 0
+            while True:
+                batch = docs.fetch(docs.ids()[offset:offset+batch_size])
+                if not batch:
+                    break
+                existing_embeddings.update(record.id for record in batch)
+                offset += batch_size
 
         # Now, query Supabase for images with descriptions that don't have embeddings
         response = supabase_client.table("street_view_images").select("*").filter(
