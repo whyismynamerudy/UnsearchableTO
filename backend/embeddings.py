@@ -1,55 +1,46 @@
 import cohere
 import vecs
+import requests
 from config import settings
-
-# vx = vecs.create_client(settings.DB_CONNECTION_STRING)
 
 
 def load_captions():
-    return [
-        {"id": "1", "caption": "Caption A", "embeddings": None},
-        {"id": "2", "caption": "Caption B", "embeddings": None},
-    ]
+    response = requests.get(
+        "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images"
+    )
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to load captions: {response.status_code}")
 
 
 def save_embeddings(batch, embeddings):
-    with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
+    with vecs.create_client(settings.SUPABASE_URL) as vx:
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
         # docs contains :
         # vector[0]: uuid -> same as image uuid
         # vector[1]: embedding -> the float embeddings
 
-        # NOTE: pls update the uuid field to match what batch contains
-
         docs.upsert(
-            records=[(uuid, embedding) for uuid, embedding in zip(batch, embeddings)]
+            records=[
+                (caption["image_id"], embedding)
+                for caption, embedding in zip(batch, embeddings)
+            ]
         )
-
-    pass
-
-    # for caption, embed in zip(batch, embeddings):
-    #     # update databser for caption['id'] with embed
-    #     docs.upsert(
-    #         records = [
-
-    #         ]
-    #     )
-    #     pass
 
 
 def main():
     co = cohere.ClientV2(settings.COHERE_API_KEY)
     captions = load_captions()
+    captions = captions[0:10]
 
-    batch_size = 48
+    batch_size = 5
 
     for i in range(0, len(captions), batch_size):
-        batch = [
-            caption
-            for caption in captions[i : i + batch_size]
-            if not caption["embeddings"]
+        batch = captions[i : i + batch_size]
+        batch_texts = [
+            caption["description"] for caption in batch if caption["description"]
         ]
-        batch_texts = [caption["caption"] for caption in batch]
 
         response = co.embed(
             texts=batch_texts,
@@ -58,9 +49,11 @@ def main():
             embedding_types=["float"],
         )
 
+        print(response.embeddings.float)
+
         save_embeddings(batch, response.embeddings.float)
 
-    with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
+    with vecs.create_client(settings.SUPABASE_URL) as vx:
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
         docs.create_index(
             method=vecs.IndexMethod.hnsw,
