@@ -2,6 +2,7 @@ import asyncio
 import time
 import google.generativeai as genai
 from config import settings
+import sys
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
@@ -63,5 +64,13 @@ async def main(file_names):
 
 
 if __name__ == "__main__":
-    file_names = [f"images/e{i}.jpg" for i in range(1, 101)]
+    if len(sys.argv) < 2:
+        print("Usage: python vision.py <image_file1> <image_file2> ...")
+        sys.exit(1)
+
+    file_names = sys.argv[1:]
+
+    # Process the batch of images passed from the bash script
     asyncio.run(main(file_names))
+
+    print("Batch processing completed.")

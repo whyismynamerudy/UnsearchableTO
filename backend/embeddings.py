@@ -22,13 +22,11 @@ def save_embeddings(batch, embeddings):
         # NOTE: pls update the uuid field to match what batch contains
 
         docs.upsert(
-            records=[
-                (uuid, embedding) for uuid, embedding in zip(batch, embeddings)
-            ]
+            records=[(uuid, embedding) for uuid, embedding in zip(batch, embeddings)]
         )
 
     pass
-    
+
     # for caption, embed in zip(batch, embeddings):
     #     # update databser for caption['id'] with embed
     #     docs.upsert(
@@ -68,8 +66,6 @@ def main():
             method=vecs.IndexMethod.hnsw,
             measure=vecs.IndexMeasure.cosine_distance,
         )
-
-    
 
 
 if __name__ == "__main__":

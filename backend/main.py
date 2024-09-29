@@ -18,8 +18,10 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+
 class SearchQuery(BaseModel):
     q: str = Field(..., min_length=1, max_length=100, description="The search phrase")
+
 
 @app.get("/")
 async def root():
@@ -29,7 +31,9 @@ async def root():
 @app.get("/test")
 async def test():
     try:
-        response = supabase_client.table("street_view_images").select("*").limit(10).execute()
+        response = (
+            supabase_client.table("street_view_images").select("*").limit(10).execute()
+        )
         return response.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -44,12 +48,16 @@ async def get_street_view_images():
     latitude_max = 43.654901
 
     try:
-        response = supabase_client.table("street_view_images").select("*").filter(
-            "longitude", "gte", longitude_min
-        ).filter("longitude", "lte", longitude_max).filter(
-            "latitude", "gte", latitude_min
-        ).filter("latitude", "lte", latitude_max).execute()
-        
+        response = (
+            supabase_client.table("street_view_images")
+            .select("*")
+            .filter("longitude", "gte", longitude_min)
+            .filter("longitude", "lte", longitude_max)
+            .filter("latitude", "gte", latitude_min)
+            .filter("latitude", "lte", latitude_max)
+            .execute()
+        )
+
         return response.data  # Return the filtered rows
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -64,22 +72,26 @@ async def get_street_view_images_hundred():
     latitude_max = 43.654901
 
     try:
-        response = supabase_client.table("street_view_images").select("*").filter(
-            "longitude", "gte", longitude_min
-        ).filter("longitude", "lte", longitude_max).filter(
-            "latitude", "gte", latitude_min
-        ).filter("latitude", "lte", latitude_max).limit(100).execute()
-        
+        response = (
+            supabase_client.table("street_view_images")
+            .select("*")
+            .filter("longitude", "gte", longitude_min)
+            .filter("longitude", "lte", longitude_max)
+            .filter("latitude", "gte", latitude_min)
+            .filter("latitude", "lte", latitude_max)
+            .limit(100)
+            .execute()
+        )
+
         return response.data  # Return the filtered rows
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
 
 
 @app.get("/search")
 async def search(query: SearchQuery):
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
-    
+
         res = co.embed(
             texts=[query.q],
             model="embed-english-v3.0",
@@ -95,9 +107,16 @@ async def search(query: SearchQuery):
             measure="cosine_distance",
         )
 
-    results = supabase_client.table("street_view_images").select("*").in_("id", result_ids).execute()
+    results = (
+        supabase_client.table("street_view_images")
+        .select("*")
+        .in_("id", result_ids)
+        .execute()
+    )
     return {"results": results.data}
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
