@@ -120,7 +120,7 @@ async def search(query: SearchQuery):
             input_type="search_query",
             embedding_types=["float"],
         )
-        embedding = res.embeddings.float
+        embedding = res.embeddings.float[0]
 
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         result_ids = docs.query(
