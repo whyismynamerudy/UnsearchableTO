@@ -6,6 +6,7 @@ from config import settings
 from supabase_settings import supabase_client
 import cohere
 import vecs
+from sqlalchemy import select
 
 app = FastAPI()
 co = cohere.Client(api_key=settings.COHERE_API_KEY)
@@ -136,15 +137,13 @@ async def get_street_view_images_without_embeddings():
             docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
             existing_embeddings = set()
             
-            # Fetch all IDs in batches
-            batch_size = 1000
-            offset = 0
-            while True:
-                batch = docs.fetch(docs.ids()[offset:offset+batch_size])
-                if not batch:
-                    break
-                existing_embeddings.update(record.id for record in batch)
-                offset += batch_size
+            # Fetch all IDs using SQL
+            with vx.Session() as sess:
+                stmt = select(docs.table.c.id)
+                result = sess.execute(stmt)
+                existing_embeddings = set(row[0] for row in result)
+        
+        print(f"Number of existing embeddings: {len(existing_embeddings)}")
 
         # Now, query Supabase for images with descriptions that don't have embeddings
         response = supabase_client.table("street_view_images").select("*").filter(
@@ -154,12 +153,17 @@ async def get_street_view_images_without_embeddings():
         ).filter("latitude", "lte", latitude_max).filter(
             "description", "neq", "null"
         ).execute()
+
+        print(f"Number of images without embeddings: {len(response.data)}")
         
         if response.data is None:
             raise Exception("No data returned from Supabase")
         
         # Filter out images that already have embeddings
-        filtered_data = [row for row in response.data if row['image_id'] not in existing_embeddings]
+        filtered_data = [
+            row for row in response.data 
+            if str(row['image_id']) not in existing_embeddings
+        ]
         
         return filtered_data
 
