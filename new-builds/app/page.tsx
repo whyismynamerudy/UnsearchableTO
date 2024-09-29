@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Map from '@/components/Map';
-import SearchBar from '@/components/SearchBar';
-import CameraUpload from '@/components/CameraUpload';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import CameraUpload from "@/components/CameraUpload";
+import Map from "@/components/Map";
+import SearchBar from "@/components/SearchBar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 
 export interface MarkerDetails {
   image_id: string;
@@ -33,7 +33,7 @@ export default function Home() {
   );
 
   const handleSearch = async (query: string) => {
-    console.log('Search query:', query);
+    console.log("Search query:", query);
 
     if (!query) {
       setMarkers([]);
@@ -51,15 +51,15 @@ export default function Home() {
         )}`
       );
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const results = await response.json();
 
       setMarkers(results.results.slice(0, 5));
       setHeatmapData(results.heatmap_data);
     } catch (error) {
-      console.error('Error fetching markers:', error);
-      setError('Failed to fetch markers. Please try again.');
+      console.error("Error fetching markers:", error);
+      setError("Failed to fetch markers. Please try again.");
       setMarkers([]);
     } finally {
       setIsLoading(false);
@@ -67,42 +67,45 @@ export default function Home() {
   };
 
   return (
-    <div className='min-h-screen bg-[#1a202c] text-[#e2e8f0]'>
-      <header className='bg-[#2d3748] shadow-lg'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <h1 className='text-3xl font-bold text-white'>TorontoVision</h1>
+    <div className="min-h-screen bg-[#1a202c] text-[#e2e8f0]">
+      <header className="bg-[#2d3748] shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-white">TorontoVision</h1>
+          <div className="text-xl font-medium text-[#4fd1c5] animate-shimmer">
+            511k+ views indexed
+          </div>
         </div>
       </header>
-      <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-        <div className='space-y-8'>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="space-y-8">
           <SearchBar onSearch={handleSearch} />
 
           {error && (
             <Alert
-              variant='destructive'
-              className='bg-red-900/50 border-red-700'
+              variant="destructive"
+              className="bg-red-900/50 border-red-700"
             >
-              <AlertCircle className='h-5 w-5 text-red-400' />
-              <AlertTitle className='text-red-400 font-semibold'>
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              <AlertTitle className="text-red-400 font-semibold">
                 Error
               </AlertTitle>
-              <AlertDescription className='text-red-200'>
+              <AlertDescription className="text-red-200">
                 {error}
               </AlertDescription>
             </Alert>
           )}
 
           {isLoading ? (
-            <div className='flex justify-center items-center h-64'>
-              <div className='animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4fd1c5]'></div>
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4fd1c5]"></div>
             </div>
           ) : (
-            <div className='bg-[#2d3748] shadow-xl rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[#4fd1c5]/20'>
+            <div className="bg-[#2d3748] shadow-xl rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[#4fd1c5]/20">
               <Map markers={markers} heatmapData={heatmapData} />
             </div>
           )}
 
-          <div className='sm:hidden'>
+          <div className="sm:hidden">
             <CameraUpload />
           </div>
         </div>
