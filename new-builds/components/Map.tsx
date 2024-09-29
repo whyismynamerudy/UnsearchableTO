@@ -32,6 +32,7 @@ const options = {
     latLngBounds: torontoBounds,
     strictBounds: true,
   },
+  mapTypeId: 'satellite',
 };
 
 interface MapProps {
@@ -215,7 +216,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
           <Marker
             position={userLocation}
             icon={{
-              url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+              url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
             }}
           />
         )}
