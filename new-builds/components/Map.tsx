@@ -42,17 +42,16 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   const [showMarkers, setShowMarkers] = React.useState(true);
   const [showHeatmap, setShowHeatmap] = React.useState(true);
-  const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
+  const [map, setMap] = React.useState<google.maps.Map | null>(null);
   const [heatmap, setHeatmap] = React.useState<google.maps.visualization.HeatmapLayer | null>(null);
   const [userLocation, setUserLocation] = React.useState<UserLocation | null>(null);
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [selectedContent, setSelectedContent] = React.useState<MarkerDetails | null>(null);
+  const [zoom, setZoom] = React.useState(14);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey:
-      process.env.REACT_APP_GOOGLE_MAPS_API ||
-      'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API || 'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
     libraries: libraries,
   });
 
@@ -103,6 +102,36 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
     setIsSheetOpen(false);
   };
 
+  const updateHeatmap = React.useCallback(() => {
+    if (map && heatmap) {
+      const bounds = map.getBounds();
+      const zoom = map.getZoom();
+      setZoom(zoom || 14);
+
+      if (bounds) {
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+
+        const visiblePoints = processedHeatmapData.filter((point) => {
+          const lat = point.location.lat();
+          const lng = point.location.lng();
+          return lat <= ne.lat() && lat >= sw.lat() && lng <= ne.lng() && lng >= sw.lng();
+        });
+
+        heatmap.setData(visiblePoints);
+
+        // Adjust radius and opacity based on zoom level
+        const radius = Math.max(20, Math.min(100, (zoom ?? 10) * 4)); // Default zoom to 10 if undefined
+        const opacity = Math.max(0.4, Math.min(0.8, (zoom ?? 10) / 22));
+
+        heatmap.setOptions({
+          radius: radius,
+          opacity: opacity,
+        });
+      }
+    }
+  }, [map, heatmap, processedHeatmapData]);
+
   React.useEffect(() => {
     navigator.geolocation.getCurrentPosition(success, error);
   }, []);
@@ -120,6 +149,15 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       heatmap.setMap(showHeatmap ? map : null);
     }
   }, [showHeatmap, heatmap, map]);
+
+  React.useEffect(() => {
+    if (map) {
+      map.addListener('idle', updateHeatmap);
+      return () => {
+        google.maps.event.clearListeners(map, 'idle');
+      };
+    }
+  }, [map, updateHeatmap]);
 
   return isLoaded && userLocation ? (
     <div>
@@ -144,7 +182,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={userLocation || center}
-        zoom={14}
+        zoom={zoom}
         onLoad={onLoad}
         onUnmount={onUnmount}
         options={options}
