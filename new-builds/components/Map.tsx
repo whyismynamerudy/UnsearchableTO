@@ -8,7 +8,7 @@ interface UserLocation {
   lng: number;
 }
 
-const libraries: ("visualization")[] = ["visualization"];
+const libraries: 'visualization'[] = ['visualization'];
 
 const containerStyle = {
   width: '100%',
@@ -41,26 +41,34 @@ interface MapProps {
 
 const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   const [showMarkers, setShowMarkers] = React.useState(true);
-  const [showHeatmap, setShowHeatmap] = React.useState(true);
+  const [showHeatmap, setShowHeatmap] = React.useState(false);
   const [map, setMap] = React.useState<google.maps.Map | null>(null);
-  const [heatmap, setHeatmap] = React.useState<google.maps.visualization.HeatmapLayer | null>(null);
-  const [userLocation, setUserLocation] = React.useState<UserLocation | null>(null);
+  const [heatmap, setHeatmap] =
+    React.useState<google.maps.visualization.HeatmapLayer | null>(null);
+  const [userLocation, setUserLocation] = React.useState<UserLocation | null>(
+    null
+  );
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
-  const [selectedContent, setSelectedContent] = React.useState<MarkerDetails | null>(null);
+  const [selectedContent, setSelectedContent] =
+    React.useState<MarkerDetails | null>(null);
   const [zoom, setZoom] = React.useState(14);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API || 'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
+    googleMapsApiKey:
+      process.env.REACT_APP_GOOGLE_MAPS_API ||
+      'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
     libraries: libraries,
   });
 
-  const processedHeatmapData = React.useMemo(() => 
-    heatmapData?.map(([lat, lng, weight]) => ({
-      location: new google.maps.LatLng(lat, lng),
-      weight: weight
-    })) || [],
-  [heatmapData]);
+  const processedHeatmapData = React.useMemo(
+    () =>
+      heatmapData?.map(([lat, lng, weight]) => ({
+        location: new google.maps.LatLng(lat, lng),
+        weight: weight,
+      })) || [],
+    [heatmapData]
+  );
 
   const success = (position: GeolocationPosition) => {
     setUserLocation({
@@ -73,16 +81,19 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
     console.error('Geolocation error:', err);
   };
 
-  const onLoad = React.useCallback((map: google.maps.Map) => {
-    map.fitBounds(torontoBounds);
-    setMap(map);
+  const onLoad = React.useCallback(
+    (map: google.maps.Map) => {
+      map.fitBounds(torontoBounds);
+      setMap(map);
 
-    const heatmapLayer = new google.maps.visualization.HeatmapLayer({
-      data: processedHeatmapData,
-      map: showHeatmap ? map : null,
-    });
-    setHeatmap(heatmapLayer);
-  }, [processedHeatmapData, showHeatmap]);
+      const heatmapLayer = new google.maps.visualization.HeatmapLayer({
+        data: processedHeatmapData,
+        map: showHeatmap ? map : null,
+      });
+      setHeatmap(heatmapLayer);
+    },
+    [processedHeatmapData, showHeatmap]
+  );
 
   const onUnmount = React.useCallback(() => {
     if (heatmap) {
@@ -115,7 +126,12 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
         const visiblePoints = processedHeatmapData.filter((point) => {
           const lat = point.location.lat();
           const lng = point.location.lng();
-          return lat <= ne.lat() && lat >= sw.lat() && lng <= ne.lng() && lng >= sw.lng();
+          return (
+            lat <= ne.lat() &&
+            lat >= sw.lat() &&
+            lng <= ne.lng() &&
+            lng >= sw.lng()
+          );
         });
 
         heatmap.setData(visiblePoints);
@@ -164,7 +180,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       <div>
         <label>
           <input
-            type="checkbox"
+            type='checkbox'
             checked={showMarkers}
             onChange={(e) => setShowMarkers(e.target.checked)}
           />
@@ -172,7 +188,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
         </label>
         <label>
           <input
-            type="checkbox"
+            type='checkbox'
             checked={showHeatmap}
             onChange={(e) => setShowHeatmap(e.target.checked)}
           />
@@ -187,13 +203,14 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
         onUnmount={onUnmount}
         options={options}
       >
-        {showMarkers && markers?.map((marker, index) => (
-          <Marker
-            key={index}
-            position={{ lat: marker.latitude, lng: marker.longitude }}
-            onClick={() => handleMarkerClick(marker)}
-          />
-        ))}
+        {showMarkers &&
+          markers?.map((marker, index) => (
+            <Marker
+              key={index}
+              position={{ lat: marker.latitude, lng: marker.longitude }}
+              onClick={() => handleMarkerClick(marker)}
+            />
+          ))}
         {userLocation && (
           <Marker
             position={userLocation}
