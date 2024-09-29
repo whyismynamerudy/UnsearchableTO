@@ -44,8 +44,8 @@ async def get_street_view_images():
     # Updated longitude and latitude values
     longitude_min = -79.403619  # topleft longitude
     longitude_max = -79.374303  # bottomright longitude
-    latitude_min = 43.637794    # bottomleft latitude
-    latitude_max = 43.670535    # topright latitude
+    latitude_min = 43.637794  # bottomleft latitude
+    latitude_max = 43.670535  # topright latitude
 
     try:
         response = (
@@ -68,8 +68,8 @@ async def get_street_view_images_without_description():
     # Updated longitude and latitude values
     longitude_min = -79.403619  # topleft longitude
     longitude_max = -79.374303  # bottomright longitude
-    latitude_min = 43.637794    # bottomleft latitude
-    latitude_max = 43.670535    # topright latitude
+    latitude_min = 43.637794  # bottomleft latitude
+    latitude_max = 43.670535  # topright latitude
 
     try:
         response = (
@@ -87,27 +87,33 @@ async def get_street_view_images_without_description():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/street_view_images_with_description")
 async def get_street_view_images_with_description():
     # Updated longitude and latitude values
     longitude_min = -79.403619  # topleft longitude
     longitude_max = -79.374303  # bottomright longitude
-    latitude_min = 43.637794    # bottomleft latitude
-    latitude_max = 43.670535    # topright latitude
+    latitude_min = 43.637794  # bottomleft latitude
+    latitude_max = 43.670535  # topright latitude
 
     try:
-        response = supabase_client.table("street_view_images").select("*").filter(
-            "longitude", "gte", longitude_min
-        ).filter("longitude", "lte", longitude_max).filter(
-            "latitude", "gte", latitude_min
-        ).filter("latitude", "lte", latitude_max).filter(
-            "description", "neq", "null"
-        ).execute()
-        
+        response = (
+            supabase_client.table("street_view_images")
+            .select("*")
+            .filter("longitude", "gte", longitude_min)
+            .filter("longitude", "lte", longitude_max)
+            .filter("latitude", "gte", latitude_min)
+            .filter("latitude", "lte", latitude_max)
+            .filter("description", "neq", "null")
+            .execute()
+        )
+
         if response.data is None:
             raise Exception("No data returned from Supabase")
-        
-        return response.data  # Return all rows within the specified range and with non-null description
+
+        return (
+            response.data
+        )  # Return all rows within the specified range and with non-null description
     except Exception as e:
         print(f"Error in get_street_view_images_with_description: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
@@ -118,8 +124,8 @@ async def get_street_view_images_hundred():
     # Updated longitude and latitude values
     longitude_min = -79.403619  # topleft longitude
     longitude_max = -79.374303  # bottomright longitude
-    latitude_min = 43.637794    # bottomleft latitude
-    latitude_max = 43.670535    # topright latitude
+    latitude_min = 43.637794  # bottomleft latitude
+    latitude_max = 43.670535  # topright latitude
 
     try:
         response = (
