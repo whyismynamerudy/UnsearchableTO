@@ -132,7 +132,7 @@ async def search(q: str = Query(..., min_length=1, max_length=100)):
     results = (
         supabase_client.table("street_view_images")
         .select("*")
-        .in_("id", result_ids)
+        .in_("image_id", result_ids)
         .execute()
     )
     return {"results": results.data}
