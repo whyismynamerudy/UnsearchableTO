@@ -17,7 +17,7 @@ def load_captions():
 
 def save_embeddings(image_ids, embeddings):
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
-        docs = vx.get_or_create_collection(name="image_embeddings", dimension=3)
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         # docs contains :
         # vector[0]: uuid -> same as image uuid
         # vector[1]: embedding -> the float embeddings
@@ -33,9 +33,8 @@ def save_embeddings(image_ids, embeddings):
 def main():
     co = cohere.ClientV2(settings.COHERE_API_KEY)
     captions = load_captions()
-    captions = captions[0:10]
 
-    batch_size = 3
+    batch_size = 96
 
     for i in range(0, len(captions), batch_size):
         batch = captions[i : i + batch_size]
@@ -53,7 +52,7 @@ def main():
         save_embeddings(image_ids, response.embeddings.float)
 
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
-        docs = vx.get_or_create_collection(name="image_embeddings", dimension=3)
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         docs.create_index(
             method=vecs.IndexMethod.hnsw,
             measure=vecs.IndexMeasure.cosine_distance,
