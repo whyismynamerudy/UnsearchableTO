@@ -30,14 +30,9 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        'https://new-builds-2024-818004117691.us-central1.run.app/search',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ q: query }), // Send the query as a JSON body
-        }
+        `https://new-builds-2024-818004117691.us-central1.run.app/search?q=${encodeURIComponent(
+          query
+        )}`
       );
       if (!response.ok) {
         throw new Error('Network response was not ok');
