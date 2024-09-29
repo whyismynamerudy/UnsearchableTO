@@ -98,7 +98,7 @@ async def get_street_view_images_with_description():
         ).filter("longitude", "lte", longitude_max).filter(
             "latitude", "gte", latitude_min
         ).filter("latitude", "lte", latitude_max).filter(
-            "description", "not.is", None
+            "description", "neq", "null"
         ).execute()
         
         if response.data is None:
