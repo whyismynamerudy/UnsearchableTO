@@ -19,12 +19,17 @@ const CameraUpload: React.FC = () => {
     }
   };
 
+  const handleClose = () => {
+    setIsCameraOpen(false);
+    setImage(null);
+  };
+
   return (
     <div className='relative'>
       {!isCameraOpen && (
         <button
           onClick={() => setIsCameraOpen(true)}
-          className='absolute bottom-16 right-16 bg-blue-500 hover:bg-blue-700 text-white font-bold w-12 h-12 rounded-full flex items-center justify-center shadow-lg'
+          className='absolute bottom-32 right-16 bg-blue-500 hover:bg-blue-700 text-white font-bold w-12 h-12 rounded-full flex items-center justify-center shadow-lg'
         >
           📸
         </button>
@@ -45,6 +50,7 @@ const CameraUpload: React.FC = () => {
                       'It is not possible to switch camera to the requested side.',
                     canvas: 'Canvas is not supported.',
                   }}
+                  facingMode='environment'
                 />
                 <div className='flex justify-end'>
                   <Button
@@ -69,7 +75,7 @@ const CameraUpload: React.FC = () => {
             )}
 
             <button
-              onClick={() => setIsCameraOpen(false)}
+              onClick={() => handleClose()}
               className='absolute top-2 right-2 text-white bg-red-500 rounded-full w-8 h-8 flex items-center justify-center'
             >
               ✖️
