@@ -9,10 +9,11 @@ interface SearchBarProps {
 
 const samplePrompts = [
   'Benches Next To a Tree',
-  'Construction sites',
-  'Homeless People',
+  'Rusty Bridge',
+  'Pride Flag',
   'Violet Flowers',
   'Street Art',
+  'Ghostbusters',
 ];
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
