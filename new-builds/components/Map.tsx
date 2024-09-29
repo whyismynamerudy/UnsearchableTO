@@ -1,5 +1,5 @@
 import { MarkerDetails } from '@/app/page';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, HeatmapLayer, Marker, useJsApiLoader, LoadScript } from '@react-google-maps/api';
 import React from 'react';
 import MapSheet from './MapSheet';
 
@@ -7,6 +7,8 @@ interface userLocation {
   lat: number;
   lng: number;
 }
+
+const libraries: ("visualization")[] = ["visualization"];
 
 const containerStyle = {
   width: '100%',
@@ -34,18 +36,30 @@ const options = {
 
 interface MapProps {
   markers?: MarkerDetails[];
+  heatmapData?: [number, number, number][];
 }
 
-const Map: React.FC<MapProps> = ({ markers }) => {
+const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
+  const [showMarkers, setShowMarkers] = React.useState(true);
+  const [showHeatmap, setShowHeatmap] = React.useState(true);
+
+  const processedHeatmapData = heatmapData?.map(([lat, lng, weight]: [number, number, number]) => ({
+    location: new google.maps.LatLng(lat, lng),
+    weight: weight
+  })) || [];
+
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey:
       process.env.REACT_APP_GOOGLE_MAPS_API ||
       'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
+    libraries: libraries,
   });
 
   const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
   const [userLocation, setUserLocation] = React.useState<userLocation | null>();
+
+  const [heatmapLayer, setHeatmapLayer] = React.useState<google.maps.visualization.HeatmapLayer | null>(null);
 
   const success = (position: GeolocationPosition) => {
     console.log(position);
@@ -62,7 +76,41 @@ const Map: React.FC<MapProps> = ({ markers }) => {
   const onLoad = React.useCallback((map: google.maps.Map) => {
     map.fitBounds(torontoBounds);
     setMap(map);
-  }, []);
+
+    if (heatmapData && heatmapData.length > 0) {
+      const heatmapPoints: google.maps.visualization.WeightedLocation[] = heatmapData.map(([lat, lng, weight]) => ({
+        location: new google.maps.LatLng(lat, lng),
+        weight: weight
+      }));
+      const heatmap = new google.maps.visualization.HeatmapLayer({
+        data: heatmapPoints,
+        map: map,
+        radius: 50,  // Increase the base radius
+        dissipating: true,
+      });
+      setHeatmapLayer(heatmap);
+
+      // Add zoom changed listener
+      map.addListener('zoom_changed', () => {
+        const zoom = map.getZoom();
+        if (zoom !== undefined) {
+          const newRadius = Math.max(10, 50 - zoom);  // Adjust radius based on zoom level
+          heatmap.setOptions({ radius: newRadius });
+        }
+      });
+    }
+  }, [heatmapData]);
+
+  React.useEffect(() => {
+    if (heatmapLayer) {
+      heatmapLayer.setMap(showHeatmap ? map : null);
+    }
+  }, [showHeatmap, map, heatmapLayer]);
+
+  // const onLoad = React.useCallback((map: google.maps.Map) => {
+  //   map.fitBounds(torontoBounds);
+  //   setMap(map);
+  // }, []);
 
   const onUnmount = React.useCallback(() => {
     setMap(null);
@@ -106,32 +154,85 @@ const Map: React.FC<MapProps> = ({ markers }) => {
   }, [map, markersLoaded, markers, userLocation]);
 
   return isLoaded ? (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={0}
-      onLoad={onLoad}
-      onUnmount={onUnmount}
-      options={options}
-    >
-      {markers?.map((marker, index) => (
-        <Marker
-          key={index}
-          position={{ lat: marker.latitude, lng: marker.longitude }}
-          onClick={() => handleMarkerClick(marker)}
-        />
-      ))}
-      {selectedContent && (
-        <MapSheet
-          isOpen={isSheetOpen}
-          onClose={handleClose}
-          content={selectedContent}
-        />
-      )}
-    </GoogleMap>
+    <div>
+      <div>
+        <label>
+          <input
+            type="checkbox"
+            checked={showMarkers}
+            onChange={(e) => setShowMarkers(e.target.checked)}
+          />
+          Show Markers
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showHeatmap}
+            onChange={(e) => setShowHeatmap(e.target.checked)}
+          />
+          Show Heatmap
+        </label>
+      </div>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={0}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        options={options}
+      >
+        {showHeatmap && (
+          <HeatmapLayer
+            data={processedHeatmapData}
+          />
+        )}
+        {showMarkers && markers?.map((marker, index) => (
+          <Marker
+            key={index}
+            position={{ lat: marker.latitude, lng: marker.longitude }}
+            onClick={() => handleMarkerClick(marker)}
+          />
+        ))}
+        {selectedContent && (
+          <MapSheet
+            isOpen={isSheetOpen}
+            onClose={handleClose}
+            content={selectedContent}
+          />
+        )}
+      </GoogleMap>
+    </div>
   ) : (
     <div>Loading...</div>
   );
+
+  // return isLoaded ? (
+  //   <GoogleMap
+  //     mapContainerStyle={containerStyle}
+  //     center={center}
+  //     zoom={0}
+  //     onLoad={onLoad}
+  //     onUnmount={onUnmount}
+  //     options={options}
+  //   >
+  //     {markers?.map((marker, index) => (
+  //       <Marker
+  //         key={index}
+  //         position={{ lat: marker.latitude, lng: marker.longitude }}
+  //         onClick={() => handleMarkerClick(marker)}
+  //       />
+  //     ))}
+  //     {selectedContent && (
+  //       <MapSheet
+  //         isOpen={isSheetOpen}
+  //         onClose={handleClose}
+  //         content={selectedContent}
+  //       />
+  //     )}
+  //   </GoogleMap>
+  // ) : (
+  //   <div>Loading...</div>
+  // );
 };
 
 export default React.memo(Map);

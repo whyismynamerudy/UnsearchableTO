@@ -19,16 +19,23 @@ export interface MarkerDetails {
   description: string | null;
 }
 
+export interface SearchResults {
+  results: MarkerDetails[];
+  heatmap_data: [number, number, number][];
+}
+
 export default function Home() {
   const [markers, setMarkers] = useState<MarkerDetails[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [heatmapData, setHeatmapData] = useState<[number, number, number][]>([]);
 
   const handleSearch = async (query: string) => {
     console.log('Search query:', query);
 
     if (!query) {
       setMarkers([]);
+      setHeatmapData([]);
       return;
     }
 
@@ -47,6 +54,7 @@ export default function Home() {
       const results = await response.json();
 
       setMarkers(results.results);
+      setHeatmapData(results.heatmap_data);
     } catch (error) {
       console.error('Error fetching markers:', error);
       setError('Failed to fetch markers. Please try again.');
@@ -88,7 +96,7 @@ export default function Home() {
             </div>
           ) : (
             <div className='bg-[#2d3748] shadow-xl rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[#4fd1c5]/20'>
-              <Map markers={markers} />
+              <Map markers={markers} heatmapData={heatmapData} />
             </div>
           )}
 
