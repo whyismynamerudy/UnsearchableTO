@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 from supabase import Client, create_client
 from config import settings
+import time
 
 supabase_url = settings.SUPABASE_URL
 supabase_key = settings.SUPABASE_KEY
@@ -12,19 +13,20 @@ supabase: Client = create_client(supabase_url, supabase_key)
 
 
 def fetch_image_data():
-    url = "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images"
+    url = "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_without_description"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch image data: {response.status_code}")
     data = response.json()
-    return data[:500]
+    return data
 
 
-def process_images(image_data, batch_size=30):
+def process_images(image_data, batch_size=100):
     total_images = len(image_data)
     all_responses = []
 
     for i in range(0, total_images, batch_size):
+        batch_start_time = time.time()
         batch_end = min(i + batch_size, total_images)
         batch_number = i // batch_size + 1
 
@@ -53,7 +55,9 @@ def process_images(image_data, batch_size=30):
             print("async_vision.py stderr:", result.stderr)
             sys.exit(1)
 
-        print(f"Batch {batch_number} completed.")
+        batch_end_time = time.time()
+        batch_duration = batch_end_time - batch_start_time
+        print(f"Batch {batch_number} completed in {batch_duration:.2f} seconds.")
         print()
 
     return all_responses
@@ -68,8 +72,6 @@ def update_description_in_db(image_url, description):
             .eq("image_url", image_url)
             .execute()
         )
-        if result:
-            print(f"Successfully updated database for image {image_url}")
     except Exception as e:
         print(f"Error updating database for image {image_url}: {e}")
 
@@ -83,19 +85,23 @@ def main():
         print("No image data fetched from the API.")
         sys.exit(1)
 
+    print("Processing images...")
     responses = process_images(image_data)
     print("All batches processed.")
     print(f"Total responses: {len(responses)}")
+    print(f"Number of responses with non empty description: {len([response for response in responses if response['description']])}")
 
+    print("Updating database...")
     for response in responses:
         image_url = response["image_url"]
         description = response["description"]
         update_description_in_db(image_url, description)
+    print("Database updated.")
 
-    with open("all_responses.json", "w") as f:
+    with open("all_responses_that_failed.json", "w") as f:
         json.dump(responses, f)
 
-    print("Responses saved to all_responses.json")
+    print("Responses saved!")
 
 
 if __name__ == "__main__":

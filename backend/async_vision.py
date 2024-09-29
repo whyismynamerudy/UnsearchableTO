@@ -55,7 +55,6 @@ if __name__ == "__main__":
 
     image_urls = sys.argv[1:]
 
-    # Process all images asynchronously
     responses = asyncio.run(main(image_urls))
     print(json.dumps(responses))
 
