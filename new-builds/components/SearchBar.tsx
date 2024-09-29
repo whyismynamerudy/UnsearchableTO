@@ -8,7 +8,7 @@ interface SearchBarProps {
 }
 
 const samplePrompts = [
-  'Relaxing park with a bench',
+  'Bench next to tree',
   'Construction sites',
   'Homeless People',
   'Toilets',
