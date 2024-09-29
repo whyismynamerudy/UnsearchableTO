@@ -90,7 +90,7 @@ const Map: React.FC<MapProps> = ({
       // Return as a WeightedLocation object
       return {
         location: new google.maps.LatLng(lat, lng),
-        weight: newWeight,
+        weight: newWeight + 0.2,
       } as google.maps.visualization.WeightedLocation; // Type assertion
     });
   }, [heatmapData]);
