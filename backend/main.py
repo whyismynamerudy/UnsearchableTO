@@ -112,6 +112,45 @@ async def get_street_view_images_with_description():
     except Exception as e:
         print(f"Error in get_street_view_images_with_description: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
+
+
+
+@app.get("/street_view_images_without_embeddings")
+async def get_street_view_images_without_embeddings():
+    # Updated longitude and latitude values
+    longitude_min = -79.403619  # topleft longitude
+    longitude_max = -79.374303  # bottomright longitude
+    latitude_min = 43.637794    # bottomleft latitude
+    latitude_max = 43.670535    # topright latitude
+
+    try:
+        # First, get all image_ids that already have embeddings
+        with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
+            docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
+            existing_embeddings = set(docs.peek(limit=1000000)['id'])  # Adjust limit if needed
+
+        # Now, query Supabase for images with descriptions that don't have embeddings
+        response = supabase_client.table("street_view_images").select("*").filter(
+            "longitude", "gte", longitude_min
+        ).filter("longitude", "lte", longitude_max).filter(
+            "latitude", "gte", latitude_min
+        ).filter("latitude", "lte", latitude_max).filter(
+            "description", "neq", "null"
+        ).execute()
+        
+        if response.data is None:
+            raise Exception("No data returned from Supabase")
+        
+        # Filter out images that already have embeddings
+        filtered_data = [row for row in response.data if row['image_id'] not in existing_embeddings]
+        
+        return filtered_data
+
+    except Exception as e:
+        print(f"Error in get_street_view_images_without_embeddings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
 
 
 @app.get("/street_view_images_hundred")
