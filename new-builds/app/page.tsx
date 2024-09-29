@@ -55,7 +55,7 @@ export default function Home() {
       }
       const results = await response.json();
 
-      setMarkers(results.results);
+      setMarkers(results.results.slice(0, 5));
       setHeatmapData(results.heatmap_data);
     } catch (error) {
       console.error('Error fetching markers:', error);
