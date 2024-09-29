@@ -39,7 +39,7 @@ export default function Home() {
       }
       const results = await response.json();
 
-      setMarkers(results);
+      setMarkers(results.results);
       setError(null);
     } catch (error) {
       console.error('Error fetching markers:', error);
