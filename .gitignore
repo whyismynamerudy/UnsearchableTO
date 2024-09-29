@@ -48,6 +48,7 @@ venv/
 env/
 .venv/
 .env/
+**envhere**
 
 # Distribution / packaging
 dist/
