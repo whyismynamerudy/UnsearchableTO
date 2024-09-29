@@ -28,7 +28,9 @@ export default function Home() {
   const [markers, setMarkers] = useState<MarkerDetails[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [heatmapData, setHeatmapData] = useState<[number, number, number][]>([]);
+  const [heatmapData, setHeatmapData] = useState<[number, number, number][]>(
+    []
+  );
 
   const handleSearch = async (query: string) => {
     console.log('Search query:', query);
@@ -68,7 +70,7 @@ export default function Home() {
     <div className='min-h-screen bg-[#1a202c] text-[#e2e8f0]'>
       <header className='bg-[#2d3748] shadow-lg'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <h1 className='text-3xl font-bold text-white'>Location Explorer</h1>
+          <h1 className='text-3xl font-bold text-white'>TorontoVision</h1>
         </div>
       </header>
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
