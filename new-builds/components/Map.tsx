@@ -1,5 +1,5 @@
 import { MarkerDetails } from '@/app/page';
-import { GoogleMap, HeatmapLayer, Marker, useJsApiLoader, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import React from 'react';
 import MapSheet from './MapSheet';
 
@@ -42,11 +42,11 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   const [showMarkers, setShowMarkers] = React.useState(true);
   const [showHeatmap, setShowHeatmap] = React.useState(true);
-
-  const processedHeatmapData = heatmapData?.map(([lat, lng, weight]: [number, number, number]) => ({
-    location: new google.maps.LatLng(lat, lng),
-    weight: weight
-  })) || [];
+  const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
+  const [heatmap, setHeatmap] = React.useState<google.maps.visualization.HeatmapLayer | null>(null);
+  const [userLocation, setUserLocation] = React.useState<UserLocation | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [selectedContent, setSelectedContent] = React.useState<MarkerDetails | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -56,15 +56,12 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
     libraries: libraries,
   });
 
-  const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
-  const [userLocation, setUserLocation] = React.useState<UserLocation | null>(
-    null
-  );
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
-  const [selectedContent, setSelectedContent] =
-    React.useState<MarkerDetails | null>(null);
-
-  const [heatmapLayer, setHeatmapLayer] = React.useState<google.maps.visualization.HeatmapLayer | null>(null);
+  const processedHeatmapData = React.useMemo(() => 
+    heatmapData?.map(([lat, lng, weight]) => ({
+      location: new google.maps.LatLng(lat, lng),
+      weight: weight
+    })) || [],
+  [heatmapData]);
 
   const success = (position: GeolocationPosition) => {
     setUserLocation({
@@ -81,44 +78,20 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
     map.fitBounds(torontoBounds);
     setMap(map);
 
-    if (heatmapData && heatmapData.length > 0) {
-      const heatmapPoints: google.maps.visualization.WeightedLocation[] = heatmapData.map(([lat, lng, weight]) => ({
-        location: new google.maps.LatLng(lat, lng),
-        weight: weight
-      }));
-      const heatmap = new google.maps.visualization.HeatmapLayer({
-        data: heatmapPoints,
-        map: map,
-        radius: 50,  // Increase the base radius
-        dissipating: true,
-      });
-      setHeatmapLayer(heatmap);
-
-      // Add zoom changed listener
-      map.addListener('zoom_changed', () => {
-        const zoom = map.getZoom();
-        if (zoom !== undefined) {
-          const newRadius = Math.max(10, 50 - zoom);  // Adjust radius based on zoom level
-          heatmap.setOptions({ radius: newRadius });
-        }
-      });
-    }
-  }, [heatmapData]);
-
-  React.useEffect(() => {
-    if (heatmapLayer) {
-      heatmapLayer.setMap(showHeatmap ? map : null);
-    }
-  }, [showHeatmap, map, heatmapLayer]);
-
-  // const onLoad = React.useCallback((map: google.maps.Map) => {
-  //   map.fitBounds(torontoBounds);
-  //   setMap(map);
-  // }, []);
+    const heatmapLayer = new google.maps.visualization.HeatmapLayer({
+      data: processedHeatmapData,
+      map: showHeatmap ? map : null,
+    });
+    setHeatmap(heatmapLayer);
+  }, [processedHeatmapData, showHeatmap]);
 
   const onUnmount = React.useCallback(() => {
+    if (heatmap) {
+      heatmap.setMap(null);
+    }
     setMap(null);
-  }, []);
+    setHeatmap(null);
+  }, [heatmap]);
 
   const handleMarkerClick = (content: MarkerDetails) => {
     setSelectedContent(content);
@@ -130,12 +103,10 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
     setIsSheetOpen(false);
   };
 
-  // Get user location on component mount
   React.useEffect(() => {
     navigator.geolocation.getCurrentPosition(success, error);
   }, []);
 
-  // Panning to user location when userLocation is updated
   React.useEffect(() => {
     if (map && userLocation) {
       const { lat, lng } = userLocation;
@@ -143,6 +114,12 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       map.panTo({ lat, lng });
     }
   }, [map, userLocation, markers]);
+
+  React.useEffect(() => {
+    if (heatmap) {
+      heatmap.setMap(showHeatmap ? map : null);
+    }
+  }, [showHeatmap, heatmap, map]);
 
   return isLoaded && userLocation ? (
     <div>
@@ -172,32 +149,22 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
         onUnmount={onUnmount}
         options={options}
       >
-        {showHeatmap && (
-          <HeatmapLayer
-            data={processedHeatmapData}
-          />
-        )}
-        {/* Render markers from the provided data */}
-      {showMarkers && markers?.map((marker, index) => (
+        {showMarkers && markers?.map((marker, index) => (
           <Marker
             key={index}
             position={{ lat: marker.latitude, lng: marker.longitude }}
             onClick={() => handleMarkerClick(marker)}
           />
         ))}
-  
-      {/* Render user location marker if userLocation is available */}
-      {userLocation && (
-        <Marker
-          position={userLocation}
-          icon={{
-            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-          }}
-        />
-      )}
-
-      {/* Display a sheet for selected marker content */}
-      {selectedContent && (
+        {userLocation && (
+          <Marker
+            position={userLocation}
+            icon={{
+              url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            }}
+          />
+        )}
+        {selectedContent && (
           <MapSheet
             isOpen={isSheetOpen}
             onClose={handleClose}
@@ -209,34 +176,6 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   ) : (
     <div>Loading...</div>
   );
-
-  // return isLoaded ? (
-  //   <GoogleMap
-  //     mapContainerStyle={containerStyle}
-  //     center={center}
-  //     zoom={0}
-  //     onLoad={onLoad}
-  //     onUnmount={onUnmount}
-  //     options={options}
-  //   >
-  //     {markers?.map((marker, index) => (
-  //       <Marker
-  //         key={index}
-  //         position={{ lat: marker.latitude, lng: marker.longitude }}
-  //         onClick={() => handleMarkerClick(marker)}
-  //       />
-  //     ))}
-  //     {selectedContent && (
-  //       <MapSheet
-  //         isOpen={isSheetOpen}
-  //         onClose={handleClose}
-  //         content={selectedContent}
-  //       />
-  //     )}
-  //   </GoogleMap>
-  // ) : (
-  //   <div>Loading...</div>
-  // );
 };
 
 export default React.memo(Map);
