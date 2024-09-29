@@ -71,14 +71,29 @@ const Map: React.FC<MapProps> = ({
     libraries: libraries,
   });
 
-  const processedHeatmapData = React.useMemo(
-    () =>
-      heatmapData?.map(([lat, lng, weight]) => ({
+  const processedHeatmapData = React.useMemo(() => {
+    if (!heatmapData) return [];
+
+    // Find the min and max weight
+    const weights = heatmapData.map(([, , weight]) => weight);
+    const minWeight = Math.min(...weights);
+    const maxWeight = Math.max(...weights);
+
+    // Rescale the weights in the original array
+    return heatmapData.map(([lat, lng, weight]) => {
+      // Rescale the weight
+      const newWeight =
+        maxWeight === minWeight
+          ? 1 // Prevent division by zero if all weights are the same
+          : (weight - minWeight) / (maxWeight - minWeight);
+
+      // Return as a WeightedLocation object
+      return {
         location: new google.maps.LatLng(lat, lng),
-        weight: weight,
-      })) || [],
-    [heatmapData]
-  );
+        weight: newWeight,
+      } as google.maps.visualization.WeightedLocation; // Type assertion
+    });
+  }, [heatmapData]);
 
   const success = (position: GeolocationPosition) => {
     setUserLocation({
@@ -134,8 +149,9 @@ const Map: React.FC<MapProps> = ({
         const sw = bounds.getSouthWest();
 
         const visiblePoints = processedHeatmapData.filter((point) => {
-          const lat = point.location.lat();
-          const lng = point.location.lng();
+          const lat = point.location?.lat();
+          const lng = point.location?.lng();
+          if (lat === undefined || lng === undefined) return false;
           return (
             lat <= ne.lat() &&
             lat >= sw.lat() &&
