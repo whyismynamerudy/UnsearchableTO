@@ -1,18 +1,18 @@
-import { MarkerDetails } from '@/app/page';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
-import React from 'react';
-import MapSheet from './MapSheet';
+import { MarkerDetails } from "@/app/page";
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import React from "react";
+import MapSheet from "./MapSheet";
 
 interface UserLocation {
   lat: number;
   lng: number;
 }
 
-const libraries: 'visualization'[] = ['visualization'];
+const libraries: "visualization"[] = ["visualization"];
 
 const containerStyle = {
-  width: '100%',
-  height: '95vh',
+  width: "100%",
+  height: "95vh",
 };
 
 const center = {
@@ -21,10 +21,10 @@ const center = {
 };
 
 const torontoBounds = {
-  north: 43.855401,
-  south: 43.581024,
-  west: -79.639219,
-  east: -79.116897,
+  north: 43.670535,
+  south: 43.637794,
+  west: -79.403619,
+  east: -79.374303,
 };
 
 const options = {
@@ -54,10 +54,10 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   const [zoom, setZoom] = React.useState(14);
 
   const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
+    id: "google-map-script",
     googleMapsApiKey:
       process.env.REACT_APP_GOOGLE_MAPS_API ||
-      'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
+      "AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8",
     libraries: libraries,
   });
 
@@ -78,7 +78,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   };
 
   const error = (err: GeolocationPositionError) => {
-    console.error('Geolocation error:', err);
+    console.error("Geolocation error:", err);
   };
 
   const onLoad = React.useCallback(
@@ -168,9 +168,9 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
 
   React.useEffect(() => {
     if (map) {
-      map.addListener('idle', updateHeatmap);
+      map.addListener("idle", updateHeatmap);
       return () => {
-        google.maps.event.clearListeners(map, 'idle');
+        google.maps.event.clearListeners(map, "idle");
       };
     }
   }, [map, updateHeatmap]);
@@ -180,7 +180,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       <div>
         <label>
           <input
-            type='checkbox'
+            type="checkbox"
             checked={showMarkers}
             onChange={(e) => setShowMarkers(e.target.checked)}
           />
@@ -188,7 +188,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
         </label>
         <label>
           <input
-            type='checkbox'
+            type="checkbox"
             checked={showHeatmap}
             onChange={(e) => setShowHeatmap(e.target.checked)}
           />
@@ -215,7 +215,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
           <Marker
             position={userLocation}
             icon={{
-              url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             }}
           />
         )}
@@ -229,8 +229,8 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       </GoogleMap>
     </div>
   ) : (
-    <div className='flex justify-center items-center h-64'>
-      <div className='animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4fd1c5]'></div>
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4fd1c5]"></div>
     </div>
   );
 };
