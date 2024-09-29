@@ -1,8 +1,8 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import Map from '@/components/Map';
 import SearchBar from '@/components/SearchBar';
-import { useState } from 'react';
+import CameraUpload from '@/components/CameraUpload';
 
 export interface MarkerDetails {
   image_id: string;
@@ -43,11 +43,16 @@ export default function Home() {
       setMarkers([]);
     }
   };
+
   return (
     <div>
       <SearchBar onSearch={handleSearch} />
       {error && <p className='text-red-500'>{error}</p>}
+
       <Map markers={markers} />
+      <div className='block sm:hidden'>
+        <CameraUpload />
+      </div>
     </div>
   );
 }
