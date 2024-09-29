@@ -30,18 +30,16 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        'https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_hundred'
+        `https://new-builds-2024-818004117691.us-central1.run.app/search?q=${encodeURIComponent(
+          query
+        )}`
       );
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const results = await response.json();
 
-      // Shuffle the results array and select the first 10 markers
-      const shuffledResults = results.sort(() => 0.5 - Math.random());
-      const randomMarkers = shuffledResults.slice(0, 10);
-
-      setMarkers(randomMarkers);
+      setMarkers(results);
       setError(null);
     } catch (error) {
       console.error('Error fetching markers:', error);

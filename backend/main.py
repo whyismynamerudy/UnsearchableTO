@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from config import settings
@@ -111,11 +111,11 @@ async def get_street_view_images_hundred():
 
 
 @app.get("/search")
-async def search(query: SearchQuery):
+async def search(q: str = Query(..., min_length=1, max_length=100)):
     with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
 
         res = co.embed(
-            texts=[query.q],
+            texts=[q],
             model="embed-english-v3.0",
             input_type="search_query",
             embedding_types=["float"],
