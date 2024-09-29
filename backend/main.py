@@ -77,7 +77,7 @@ async def get_street_view_images_without_description():
         ).filter("longitude", "lte", longitude_max).filter(
             "latitude", "gte", latitude_min
         ).filter("latitude", "lte", latitude_max).filter(
-            "description", "is", None
+            "description", "is", "null"
         ).execute()
         
         return response.data  # Return the filtered rows without description
@@ -122,7 +122,7 @@ async def search(query: SearchQuery):
         )
         embedding = res.embeddings.float
 
-        docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         result_ids = docs.query(
             data=embedding,
             limit=10,
