@@ -19,14 +19,12 @@ const center = {
   lat: 43.65107, // Central latitude of Toronto
   lng: -79.347015, // Central longitude of Toronto
 };
-
 const torontoBounds = {
-  north: 43.67323, // Increased north
-  south: 43.635099, // Decreased south
-  west: -79.407148, // Decreased west
-  east: -79.370774, // Increased east
+  north: 43.71123, // No change
+  south: 43.597099, // No change
+  west: -79.501348, // Decreased west by ~4km (total ~8km)
+  east: -79.276574, // Increased east by ~4km (total ~8km)
 };
-
 const options = {
   restriction: {
     latLngBounds: torontoBounds,
