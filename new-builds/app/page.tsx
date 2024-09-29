@@ -88,7 +88,7 @@ export default function Home() {
               height={40} // Adjust height as needed
               className='mr-2' // Margin to separate the logo from the text
             />
-            <h1 className='text-3xl font-bold text-black'>Unsearchable TO</h1>
+            <h1 className='text-3xl font-bold text-black'>UnsearchableTO</h1>
           </div>
           <div className='text-xl font-bold italic text-[#2d3748]'>
             511k+ objects indexed

@@ -8,10 +8,10 @@ interface SearchBarProps {
 }
 
 const samplePrompts = [
-  'Bench next to tree',
+  'Benches Next To a Tree',
   'Construction sites',
   'Homeless People',
-  'Toilets',
+  'Violet Flowers',
   'Street Art',
 ];
 
