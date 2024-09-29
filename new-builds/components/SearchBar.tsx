@@ -22,10 +22,7 @@ const SearchBar: React.FC<{ onSearch: (query: string) => void }> = ({
         className='border border-gray-300 rounded-md p-2 w-full'
         style={{ fontSize: '16px' }}
       />
-      <Button
-        type='submit'
-        className='ml-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700'
-      >
+      <Button type='submit' className='ml-2 px-4 py-2 text-white rounded-md'>
         Search
       </Button>
     </form>
