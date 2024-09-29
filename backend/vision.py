@@ -21,6 +21,40 @@ def fetch_image_data():
     return data
 
 
+def create_image_mappings(image_data):
+    mappings_file = Path("image_mappings.json")
+    if mappings_file.exists():
+        with open(mappings_file, "r") as f:
+            image_mappings = json.load(f)
+    else:
+        image_mappings = {}
+
+    new_urls = 0
+    for img in image_data:
+        if img["image_url"] not in image_mappings:
+            image_mappings[img["image_url"]] = ""
+            new_urls += 1
+
+    with open(mappings_file, "w") as f:
+        json.dump(image_mappings, f, indent=2)
+
+    print(f"Updated {mappings_file} with {new_urls} new URLs")
+    return mappings_file
+
+
+def upload_images(mappings_file):
+    script_dir = Path(__file__).resolve().parent
+    uploader_script = script_dir / "image_uploader.py"
+    python_executable = sys.executable
+
+    command = [python_executable, str(uploader_script), str(mappings_file)]
+
+    print(f"Uploading images: {' '.join(command)}")
+
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
+    print(result.stderr)
+
+
 def process_images(image_data, batch_size=100):
     total_images = len(image_data)
     all_responses = []
@@ -85,11 +119,21 @@ def main():
         print("No image data fetched from the API.")
         sys.exit(1)
 
+    print("Creating image mappings...")
+    mappings_file = create_image_mappings(image_data)
+    print("Image mappings created.")
+
+    print("Uploading images...")
+    upload_images(mappings_file)
+    print("Images uploaded.")
+
     print("Processing images...")
     responses = process_images(image_data)
     print("All batches processed.")
     print(f"Total responses: {len(responses)}")
-    print(f"Number of responses with non empty description: {len([response for response in responses if response['description']])}")
+    print(
+        f"Number of responses with non empty description: {len([response for response in responses if response['description']])}"
+    )
 
     print("Updating database...")
     for response in responses:
@@ -98,7 +142,7 @@ def main():
         update_description_in_db(image_url, description)
     print("Database updated.")
 
-    with open("all_responses_that_failed.json", "w") as f:
+    with open("responses_again.json", "w") as f:
         json.dump(responses, f)
 
     print("Responses saved!")

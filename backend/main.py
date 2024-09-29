@@ -61,7 +61,7 @@ async def get_street_view_images():
         return response.data  # Return the filtered rows
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @app.get("/street_view_images_without_description")
 async def get_street_view_images_without_description():
@@ -72,14 +72,17 @@ async def get_street_view_images_without_description():
     latitude_max = 43.654901
 
     try:
-        response = supabase_client.table("street_view_images").select("*").filter(
-            "longitude", "gte", longitude_min
-        ).filter("longitude", "lte", longitude_max).filter(
-            "latitude", "gte", latitude_min
-        ).filter("latitude", "lte", latitude_max).filter(
-            "description", "is", "null"
-        ).execute()
-        
+        response = (
+            supabase_client.table("street_view_images")
+            .select("*")
+            .filter("longitude", "gte", longitude_min)
+            .filter("longitude", "lte", longitude_max)
+            .filter("latitude", "gte", latitude_min)
+            .filter("latitude", "lte", latitude_max)
+            .filter("description", "is", "null")
+            .execute()
+        )
+
         return response.data  # Return the filtered rows without description
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -125,7 +128,7 @@ async def search(q: str = Query(..., min_length=1, max_length=100)):
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         result_ids = docs.query(
             data=embedding,
-            limit=10,
+            limit=5,
             measure="cosine_distance",
         )
 

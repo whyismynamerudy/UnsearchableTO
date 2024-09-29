@@ -22,15 +22,15 @@ def process_caption(caption):
     return caption.split(":")[-1].replace("\n", " ").strip()
 
 
-async def generate_caption(image_url):
+async def generate_caption(image_url, file_name):
     try:
         model = genai.GenerativeModel(
             model_name="gemini-1.5-flash-002", generation_config=generation_config
         )
-        response = await model.generate_content_async([image_url, "\n\n", prompt])
+        file = genai.get_file(file_name)
+        response = await model.generate_content_async([file, "\n\n", prompt])
         caption = process_caption(response.text)
         return {"image_url": image_url, "description": caption}
-
     except Exception as e:
         print(f"Failed to generate response for {image_url}: {e}", file=sys.stderr)
         return {"image_url": image_url, "description": None, "error": str(e)}
@@ -39,23 +39,26 @@ async def generate_caption(image_url):
 async def main(image_urls):
     start_time = time.time()
 
-    tasks = [generate_caption(image_url) for image_url in image_urls]
-    responses = await asyncio.gather(*tasks)
+    with open("image_mappings.json", "r") as f:
+        image_to_file = json.load(f)
+
+    print("Generating captions...", file=sys.stderr)
+    caption_tasks = [
+        generate_caption(url, image_to_file[url]) for url in image_urls if url in image_to_file
+    ]
+    responses = await asyncio.gather(*caption_tasks)
+    print("Captions generated.", file=sys.stderr)
 
     end_time = time.time()
-    print(f"\nTotal execution time: {end_time - start_time:.2f} seconds", file=sys.stderr)
+    print(
+        f"\nTotal execution time: {end_time - start_time:.2f} seconds", file=sys.stderr
+    )
 
     return responses
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python async_vision.py <image_file1> <image_file2> ...", file=sys.stderr)
-        sys.exit(1)
-
     image_urls = sys.argv[1:]
-
     responses = asyncio.run(main(image_urls))
     print(json.dumps(responses))
-
     print("Processing completed.", file=sys.stderr)
