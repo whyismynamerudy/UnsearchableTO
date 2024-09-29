@@ -2,6 +2,7 @@ import cohere
 import vecs
 import requests
 from config import settings
+import numpy as np
 
 
 def load_captions():
@@ -14,19 +15,19 @@ def load_captions():
         raise Exception(f"Failed to load captions: {response.status_code}")
 
 
-def save_embeddings(batch, embeddings):
-    with vecs.create_client(settings.SUPABASE_URL) as vx:
-        docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
+def save_embeddings(image_ids, embeddings):
+    with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=3)
         # docs contains :
         # vector[0]: uuid -> same as image uuid
         # vector[1]: embedding -> the float embeddings
 
-        docs.upsert(
-            records=[
-                (caption["image_id"], embedding)
-                for caption, embedding in zip(batch, embeddings)
-            ]
-        )
+        records = []
+        for image_id, embedding in zip(image_ids, embeddings):
+            print(image_id)
+            records.append((image_id, np.array(embedding), {}))
+
+        docs.upsert(records)
 
 
 def main():
@@ -34,13 +35,13 @@ def main():
     captions = load_captions()
     captions = captions[0:10]
 
-    batch_size = 5
+    batch_size = 3
 
     for i in range(0, len(captions), batch_size):
         batch = captions[i : i + batch_size]
-        batch_texts = [
-            caption["description"] for caption in batch if caption["description"]
-        ]
+        image_ids = [caption["image_id"] for caption in batch]
+        batch_texts = [caption["description"] for caption in batch]
+        print(batch_texts)
 
         response = co.embed(
             texts=batch_texts,
@@ -49,12 +50,10 @@ def main():
             embedding_types=["float"],
         )
 
-        print(response.embeddings.float)
+        save_embeddings(image_ids, response.embeddings.float)
 
-        save_embeddings(batch, response.embeddings.float)
-
-    with vecs.create_client(settings.SUPABASE_URL) as vx:
-        docs = vx.get_or_create_collection(name="image_embeddings", dimension=2)
+    with vecs.create_client(settings.DB_CONNECTION_STRING) as vx:
+        docs = vx.get_or_create_collection(name="image_embeddings", dimension=3)
         docs.create_index(
             method=vecs.IndexMethod.hnsw,
             measure=vecs.IndexMeasure.cosine_distance,
