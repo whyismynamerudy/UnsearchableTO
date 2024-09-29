@@ -41,11 +41,11 @@ async def test():
 
 @app.get("/street_view_images")
 async def get_street_view_images():
-    # Hardcoded longitude and latitude values
-    longitude_min = -79.393826
-    longitude_max = -79.386533
-    latitude_min = 43.649678
-    latitude_max = 43.654901
+    # Updated longitude and latitude values
+    longitude_min = -79.398081  # topleft longitude
+    longitude_max = -79.381489  # bottomright longitude
+    latitude_min = 43.640574    # bottomleft latitude
+    latitude_max = 43.655050    # topright latitude
 
     try:
         response = (
@@ -65,11 +65,11 @@ async def get_street_view_images():
 
 @app.get("/street_view_images_without_description")
 async def get_street_view_images_without_description():
-    # Hardcoded longitude and latitude values
-    longitude_min = -79.393826
-    longitude_max = -79.386533
-    latitude_min = 43.649678
-    latitude_max = 43.654901
+    # Updated longitude and latitude values
+    longitude_min = -79.398081  # topleft longitude
+    longitude_max = -79.381489  # bottomright longitude
+    latitude_min = 43.640574    # bottomleft latitude
+    latitude_max = 43.655050    # topright latitude
 
     try:
         response = supabase_client.table("street_view_images").select("*").filter(
@@ -86,11 +86,11 @@ async def get_street_view_images_without_description():
 
 @app.get("/street_view_images_with_description")
 async def get_street_view_images_with_description():
-    # Hardcoded longitude and latitude values
-    longitude_min = -79.393826
-    longitude_max = -79.386533
-    latitude_min = 43.649678
-    latitude_max = 43.654901
+    # Updated longitude and latitude values
+    longitude_min = -79.398081  # topleft longitude
+    longitude_max = -79.381489  # bottomright longitude
+    latitude_min = 43.640574    # bottomleft latitude
+    latitude_max = 43.655050    # topright latitude
 
     try:
         response = supabase_client.table("street_view_images").select("*").filter(
@@ -112,11 +112,11 @@ async def get_street_view_images_with_description():
 
 @app.get("/street_view_images_hundred")
 async def get_street_view_images_hundred():
-    # Hardcoded longitude and latitude values
-    longitude_min = -79.393826
-    longitude_max = -79.386533
-    latitude_min = 43.649678
-    latitude_max = 43.654901
+    # Updated longitude and latitude values
+    longitude_min = -79.398081  # topleft longitude
+    longitude_max = -79.381489  # bottomright longitude
+    latitude_min = 43.640574    # bottomleft latitude
+    latitude_max = 43.655050    # topright latitude
 
     try:
         response = (
