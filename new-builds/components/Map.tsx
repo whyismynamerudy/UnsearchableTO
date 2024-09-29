@@ -3,6 +3,11 @@ import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import React from 'react';
 import MapSheet from './MapSheet';
 
+interface userLocation {
+  lat: number;
+  lng: number;
+}
+
 const containerStyle = {
   width: '100%',
   height: '95vh',
@@ -40,6 +45,19 @@ const Map: React.FC<MapProps> = ({ markers }) => {
   });
 
   const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
+  const [userLocation, setUserLocation] = React.useState<userLocation | null>();
+
+  const success = (position: GeolocationPosition) => {
+    console.log(position);
+    setUserLocation({
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    });
+  };
+
+  const error = (error: GeolocationPositionError) => {
+    console.log(error);
+  };
 
   const onLoad = React.useCallback((map: google.maps.Map) => {
     map.fitBounds(torontoBounds);
@@ -68,20 +86,24 @@ const Map: React.FC<MapProps> = ({ markers }) => {
 
   React.useEffect(() => {
     if (markers && markers.length > 0) {
+      navigator.geolocation.getCurrentPosition(success, error);
       setMarkersLoaded(true); // Markers are now loaded
     }
   }, [markers]);
 
   React.useEffect(() => {
-    if (map && markersLoaded && markers) {
-      const newCenter = {
-        lat: markers[0].latitude,
-        lng: markers[0].longitude,
-      };
-      map.setZoom(14);
-      map.panTo(newCenter);
+    if (map && markersLoaded && markers && userLocation) {
+      const { lat, lng } = userLocation;
+
+      if (lat !== undefined && lng !== undefined) {
+        // Ensure both lat and lng are defined
+        if (map.getZoom() !== 14) {
+          map.setZoom(14);
+        }
+        map.panTo({ lat, lng });
+      }
     }
-  }, [map, markersLoaded, markers]);
+  }, [map, markersLoaded, markers, userLocation]);
 
   return isLoaded ? (
     <GoogleMap

@@ -26,6 +26,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className='pl-10 pr-4 py-3 w-full text-sm md:text-base bg-[#2d3748] text-white border-gray-400 rounded-lg'
+            style={{ fontSize: '16px' }}
           />
         </div>
         <Button

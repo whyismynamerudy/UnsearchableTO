@@ -53,7 +53,6 @@ export default function MapSheet({ isOpen, onClose, content }: MapSheetProps) {
               alt='Street View Image'
               layout='fill'
               objectFit='cover'
-              className='transition-transform duration-300 hover:scale-105'
             />
           </div>
         </SheetHeader>
