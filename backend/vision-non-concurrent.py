@@ -50,6 +50,7 @@ async def upload_file_async(image_url):
             image_content = await response.read()
             # Save image content to a temporary file
             import tempfile
+
             with tempfile.NamedTemporaryFile(suffix=".jpg") as temp_file:
                 temp_file.write(image_content)
                 temp_file.flush()
@@ -71,10 +72,13 @@ async def generate_response(model, file, image_id):
 
 async def update_description_in_db(image_id, description):
     try:
-        data = {
-            'description': description
-        }
-        result = supabase.table('street_view_images').update(data).eq('image_id', image_id).execute()
+        data = {"description": description}
+        result = (
+            supabase.table("street_view_images")
+            .update(data)
+            .eq("image_id", image_id)
+            .execute()
+        )
         if result.error:
             print(f"Failed to update database for image {image_id}: {result.error}")
         else:
@@ -106,7 +110,9 @@ async def main():
     model = await create_model()
 
     for i, image_data in enumerate(image_data_list, 1):
-        print(f"Processing image {i}/{len(image_data_list)}: {image_data.get('image_id')}")
+        print(
+            f"Processing image {i}/{len(image_data_list)}: {image_data.get('image_id')}"
+        )
         await process_image(model, image_data)
 
     end_time = time.time()

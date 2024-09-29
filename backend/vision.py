@@ -1,76 +1,102 @@
-import asyncio
-import time
-import google.generativeai as genai
-from config import settings
 import sys
+import subprocess
+import json
+from pathlib import Path
+import requests
+from supabase import Client, create_client
+from config import settings
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
-
-prompt = "Describe the image in a detailed unformatted paragraph. Don't mention the Google logo."
-
-generation_config = genai.GenerationConfig(
-    temperature=0,
-    top_p=0.95,
-    top_k=40,
-    max_output_tokens=512,
-    response_mime_type="text/plain",
-)
+supabase_url = settings.SUPABASE_URL
+supabase_key = settings.SUPABASE_KEY
+supabase: Client = create_client(supabase_url, supabase_key)
 
 
-def process_caption(caption):
-    return caption.split(":")[-1].replace("\n", " ").strip()
+def fetch_image_data():
+    url = "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images"
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch image data: {response.status_code}")
+    data = response.json()
+    return data[:500]
 
 
-async def upload_file(file_name):
-    return await asyncio.to_thread(genai.upload_file, file_name)
+def process_images(image_data, batch_size=30):
+    total_images = len(image_data)
+    all_responses = []
+
+    for i in range(0, total_images, batch_size):
+        batch_end = min(i + batch_size, total_images)
+        batch_number = i // batch_size + 1
+
+        print(f"Processing batch {batch_number}...")
+
+        current_batch = image_data[i:batch_end]
+
+        script_dir = Path(__file__).resolve().parent
+        vision_script = script_dir / "async_vision.py"
+        python_executable = sys.executable
+
+        image_urls = [img["image_url"] for img in current_batch]
+
+        command = [python_executable, str(vision_script)] + image_urls
+
+        print(f"Running: {' '.join(command)}")
+
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+
+        try:
+            batch_responses = json.loads(result.stdout)
+            all_responses.extend(batch_responses)
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse JSON output from async_vision.py: {e}")
+            print("async_vision.py stdout:", result.stdout)
+            print("async_vision.py stderr:", result.stderr)
+            sys.exit(1)
+
+        print(f"Batch {batch_number} completed.")
+        print()
+
+    return all_responses
 
 
-async def generate_response(file):
+def update_description_in_db(image_url, description):
     try:
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash-002", generation_config=generation_config
+        data = {"description": description}
+        result = (
+            supabase.table("street_view_images")
+            .update(data)
+            .eq("image_url", image_url)
+            .execute()
         )
-        response = await model.generate_content_async([file, "\n\n", prompt])
-        print(f"Response for {file.name}: {process_caption(response.text)[:100]}")
+        if result:
+            print(f"Successfully updated database for image {image_url}")
     except Exception as e:
-        print(f"Failed to generate response for {file.name}: {e}")
-        raise
+        print(f"Error updating database for image {image_url}: {e}")
 
 
-async def main(file_names):
-    start_time = time.time()
-    batch_size = 20
+def main():
+    print(f"Running vision.py")
 
-    for i in range(0, len(file_names), batch_size):
-        batch = file_names[i : i + batch_size]
+    image_data = fetch_image_data()
 
-        # Upload batch of files
-        print(f"Uploading batch {i//batch_size + 1}...")
-        uploaded_files = await asyncio.gather(
-            *[upload_file(file_name) for file_name in batch]
-        )
-        print(f"Batch {i//batch_size + 1} uploaded.")
+    if not image_data:
+        print("No image data fetched from the API.")
+        sys.exit(1)
 
-        # Generate responses for the uploaded batch
-        print(f"Generating responses for batch {i//batch_size + 1}...")
-        tasks = [generate_response(file) for file in uploaded_files]
-        await asyncio.gather(*tasks)
-        print(f"Responses generated for batch {i//batch_size + 1}.")
+    responses = process_images(image_data)
+    print("All batches processed.")
+    print(f"Total responses: {len(responses)}")
 
-        await asyncio.sleep(0.1)
+    for response in responses:
+        image_url = response["image_url"]
+        description = response["description"]
+        update_description_in_db(image_url, description)
 
-    end_time = time.time()
-    print(f"\nTotal execution time: {end_time - start_time:.2f} seconds")
+    with open("all_responses.json", "w") as f:
+        json.dump(responses, f)
+
+    print("Responses saved to all_responses.json")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python vision.py <image_file1> <image_file2> ...")
-        sys.exit(1)
-
-    file_names = sys.argv[1:]
-
-    # Process the batch of images passed from the bash script
-    asyncio.run(main(file_names))
-
-    print("Batch processing completed.")
+    main()
