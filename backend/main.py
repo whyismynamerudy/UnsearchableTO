@@ -98,12 +98,16 @@ async def get_street_view_images_with_description():
         ).filter("longitude", "lte", longitude_max).filter(
             "latitude", "gte", latitude_min
         ).filter("latitude", "lte", latitude_max).filter(
-            "description", "is not", "null"
+            "description", "not.is", None
         ).execute()
         
-        return response.data  # Return the filtered rows with description
+        if response.data is None:
+            raise Exception("No data returned from Supabase")
+        
+        return response.data  # Return all rows within the specified range and with non-null description
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error in get_street_view_images_with_description: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @app.get("/street_view_images_hundred")
