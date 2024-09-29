@@ -44,7 +44,9 @@ async def main(image_urls):
 
     print("Generating captions...", file=sys.stderr)
     caption_tasks = [
-        generate_caption(url, image_to_file[url]) for url in image_urls if url in image_to_file
+        generate_caption(url, image_to_file[url])
+        for url in image_urls
+        if url in image_to_file
     ]
     responses = await asyncio.gather(*caption_tasks)
     print("Captions generated.", file=sys.stderr)

@@ -11,6 +11,8 @@ supabase_url = settings.SUPABASE_URL
 supabase_key = settings.SUPABASE_KEY
 supabase: Client = create_client(supabase_url, supabase_key)
 
+MAPPINGS_FILE = Path("image_mappings.json")
+
 
 def fetch_image_data():
     url = "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_without_description"
@@ -21,10 +23,14 @@ def fetch_image_data():
     return data
 
 
+def save_mappings(image_mappings):
+    with open(MAPPINGS_FILE, "w") as f:
+        json.dump(image_mappings, f, indent=2)
+
+
 def create_image_mappings(image_data):
-    mappings_file = Path("image_mappings.json")
-    if mappings_file.exists():
-        with open(mappings_file, "r") as f:
+    if MAPPINGS_FILE.exists():
+        with open(MAPPINGS_FILE, "r") as f:
             image_mappings = json.load(f)
     else:
         image_mappings = {}
@@ -35,24 +41,63 @@ def create_image_mappings(image_data):
             image_mappings[img["image_url"]] = ""
             new_urls += 1
 
-    with open(mappings_file, "w") as f:
-        json.dump(image_mappings, f, indent=2)
+    save_mappings(image_mappings)
 
-    print(f"Updated {mappings_file} with {new_urls} new URLs")
-    return mappings_file
+    print(f"Updated {MAPPINGS_FILE} with {new_urls} new URLs")
+    return image_mappings
 
 
-def upload_images(mappings_file):
-    script_dir = Path(__file__).resolve().parent
-    uploader_script = script_dir / "image_uploader.py"
-    python_executable = sys.executable
+def upload_images(image_mappings, image_urls, batch_size=24):
+    total_images = len(image_urls)
+    all_responses = []
 
-    command = [python_executable, str(uploader_script), str(mappings_file)]
+    for i in range(0, total_images, batch_size):
+        batch_start_time = time.time()
+        batch_end = min(i + batch_size, total_images)
+        batch_number = i // batch_size + 1
 
-    print(f"Uploading images: {' '.join(command)}")
+        print(f"\nProcessing url batch {batch_number}...")
 
-    result = subprocess.run(command, check=True, capture_output=True, text=True)
-    print(result.stderr)
+        current_batch = image_urls[i:batch_end]
+
+        script_dir = Path(__file__).resolve().parent
+        uploader_script = script_dir / "image_uploader.py"
+        python_executable = sys.executable
+
+        command = [python_executable, str(uploader_script)] + current_batch
+
+        print(f"Uploading images: {' '.join(command[:5])}...{' '.join(command[-5:])}")
+
+        try:
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to run image_uploader.py: {e}")
+            print("image_uploader.py stdout:", e.stdout)
+            print("image_uploader.py stderr:", e.stderr)
+            continue
+
+        try:
+            batch_responses = json.loads(result.stdout)
+            all_responses.extend(batch_responses)
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse JSON output from image_uploader.py: {e}")
+            print("image_uploader.py stdout:", result.stdout)
+            print("image_uploader.py stderr:", result.stderr)
+            sys.exit(1)
+
+        batch_end_time = time.time()
+        batch_duration = batch_end_time - batch_start_time
+        print(f"Batch {batch_number} completed in {batch_duration:.2f} seconds.")
+
+        successful_urls = [
+            (url, file_name) for url, file_name in batch_responses.items() if file_name
+        ]
+        for url, file_name in successful_urls:
+            image_mappings[url] = file_name
+        print(f"Updated {len(successful_urls)} URLs in image_mappings.json")
+        save_mappings(image_mappings)
+
+    return image_mappings
 
 
 def process_images(image_data, batch_size=100):
@@ -64,7 +109,7 @@ def process_images(image_data, batch_size=100):
         batch_end = min(i + batch_size, total_images)
         batch_number = i // batch_size + 1
 
-        print(f"Processing batch {batch_number}...")
+        print(f"\nProcessing batch {batch_number}...")
 
         current_batch = image_data[i:batch_end]
 
@@ -92,7 +137,6 @@ def process_images(image_data, batch_size=100):
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         print(f"Batch {batch_number} completed in {batch_duration:.2f} seconds.")
-        print()
 
     return all_responses
 
@@ -120,11 +164,13 @@ def main():
         sys.exit(1)
 
     print("Creating image mappings...")
-    mappings_file = create_image_mappings(image_data)
+    image_mappings = create_image_mappings(image_data)
     print("Image mappings created.")
 
+    image_urls = [url for url, filename in image_mappings.items() if not filename]
+    print(f"Number of images to upload: {len(image_urls)}")
     print("Uploading images...")
-    upload_images(mappings_file)
+    image_mappings = upload_images(image_mappings, image_urls)
     print("Images uploaded.")
 
     print("Processing images...")
@@ -135,17 +181,16 @@ def main():
         f"Number of responses with non empty description: {len([response for response in responses if response['description']])}"
     )
 
+    with open("responses_again.json", "w") as f:
+        json.dump(responses, f)
+    print("Responses saved!")
+
     print("Updating database...")
     for response in responses:
         image_url = response["image_url"]
         description = response["description"]
         update_description_in_db(image_url, description)
     print("Database updated.")
-
-    with open("responses_again.json", "w") as f:
-        json.dump(responses, f)
-
-    print("Responses saved!")
 
 
 if __name__ == "__main__":

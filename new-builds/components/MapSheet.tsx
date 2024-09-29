@@ -42,9 +42,9 @@ export default function MapSheet({ isOpen, onClose, content }: MapSheetProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className='w-full sm:max-w-lg bg-gray-900 text-gray-100 border-gray-800'>
+      <SheetContent className='w-full sm:max-w-lg bg-white text-gray-800 border-gray-200 overflow-y-auto'>
         <SheetHeader className='space-y-4'>
-          <SheetTitle className='text-2xl font-bold text-gray-100'>
+          <SheetTitle className='text-2xl font-bold text-gray-800'>
             Location Details
           </SheetTitle>
           <div className='relative aspect-video w-full overflow-hidden rounded-lg'>
@@ -57,27 +57,27 @@ export default function MapSheet({ isOpen, onClose, content }: MapSheetProps) {
           </div>
         </SheetHeader>
         <div className='mt-6 space-y-4'>
-          <SheetDescription className='text-gray-300'>
+          <SheetDescription className='text-gray-600'>
             {description}
           </SheetDescription>
-          <Separator className='bg-gray-700' />
+          <Separator className='bg-gray-300' />
           <div className='grid grid-cols-2 gap-4 text-sm'>
             <div className='flex items-center space-x-2'>
-              <MapPin className='w-4 h-4 text-gray-400' />
+              <MapPin className='w-4 h-4 text-gray-500' />
               <span>
                 {latitude.toFixed(6)}, {longitude.toFixed(6)}
               </span>
             </div>
             <div className='flex items-center space-x-2'>
-              <Calendar className='w-4 h-4 text-gray-400' />
+              <Calendar className='w-4 h-4 text-gray-500' />
               <span>{formatDate(captured_at)}</span>
             </div>
             <div className='flex items-center space-x-2'>
-              <Compass className='w-4 h-4 text-gray-400' />
+              <Compass className='w-4 h-4 text-gray-500' />
               <span>Heading: {heading.toFixed(2)}°</span>
             </div>
             <div className='flex items-center space-x-2'>
-              <ArrowUpRight className='w-4 h-4 text-gray-400' />
+              <ArrowUpRight className='w-4 h-4 text-gray-500' />
               <span>Pitch: {pitch.toFixed(2)}°</span>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function MapSheet({ isOpen, onClose, content }: MapSheetProps) {
         <SheetFooter className='mt-6'>
           <Button
             asChild
-            className='w-full bg-[#f7fafc] hover:bg-[#e2e8f0] text-[#1a202c] font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#38a89d] focus:ring-opacity-50'
+            className='w-full bg-[#f7fafc] hover:bg-[#e2e8f0] text-gray-800 font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#38a89d] focus:ring-opacity-50'
           >
             <Link
               href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latitude},${longitude}&heading=${heading}&pitch=${pitch}&fov=${fov}`}

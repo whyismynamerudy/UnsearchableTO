@@ -21,10 +21,10 @@ const center = {
 };
 
 const torontoBounds = {
-  north: 43.670535,
-  south: 43.637794,
-  west: -79.403619,
-  east: -79.374303,
+  north: 43.67323, // Increased north
+  south: 43.635099, // Decreased south
+  west: -79.407148, // Decreased west
+  east: -79.370774, // Increased east
 };
 
 const options = {
@@ -33,16 +33,27 @@ const options = {
     strictBounds: true,
   },
   mapTypeId: 'satellite',
+  zoomControl: false,
+  streetViewControl: false,
+  fullscreenControl: false,
+  mapTypeControl: false,
+  pitchControl: false,
+  rotateControl: false,
 };
 
 interface MapProps {
   markers?: MarkerDetails[];
   heatmapData?: [number, number, number][];
+  showHeatmap: boolean;
+  showMarkers: boolean;
 }
 
-const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
-  const [showMarkers, setShowMarkers] = React.useState(true);
-  const [showHeatmap, setShowHeatmap] = React.useState(false);
+const Map: React.FC<MapProps> = ({
+  markers,
+  heatmapData,
+  showHeatmap,
+  showMarkers,
+}) => {
   const [map, setMap] = React.useState<google.maps.Map | null>(null);
   const [heatmap, setHeatmap] =
     React.useState<google.maps.visualization.HeatmapLayer | null>(null);
@@ -52,7 +63,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [selectedContent, setSelectedContent] =
     React.useState<MarkerDetails | null>(null);
-  const [zoom, setZoom] = React.useState(14);
+  const [zoom, setZoom] = React.useState(10);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -118,7 +129,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
     if (map && heatmap) {
       const bounds = map.getBounds();
       const zoom = map.getZoom();
-      setZoom(zoom || 14);
+      setZoom(zoom || 10);
 
       if (bounds) {
         const ne = bounds.getNorthEast();
@@ -156,7 +167,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
   React.useEffect(() => {
     if (map && userLocation) {
       const { lat, lng } = userLocation;
-      map.setZoom(17);
+      map.setZoom(10);
       map.panTo({ lat, lng });
     }
   }, [map, userLocation, markers]);
@@ -178,24 +189,6 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
 
   return isLoaded && userLocation ? (
     <div>
-      <div>
-        <label>
-          <input
-            type='checkbox'
-            checked={showMarkers}
-            onChange={(e) => setShowMarkers(e.target.checked)}
-          />
-          Show Markers
-        </label>
-        <label>
-          <input
-            type='checkbox'
-            checked={showHeatmap}
-            onChange={(e) => setShowHeatmap(e.target.checked)}
-          />
-          Show Heatmap
-        </label>
-      </div>
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={userLocation || center}
@@ -230,7 +223,7 @@ const Map: React.FC<MapProps> = ({ markers, heatmapData }) => {
       </GoogleMap>
     </div>
   ) : (
-    <div className='flex justify-center items-center h-64'>
+    <div className='absolute inset-0 flex justify-center items-center z-10'>
       <div className='animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4fd1c5]'></div>
     </div>
   );
