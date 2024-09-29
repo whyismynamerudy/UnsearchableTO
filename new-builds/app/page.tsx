@@ -30,7 +30,9 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        'https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_hundred'
+        `https://new-builds-2024-818004117691.us-central1.run.app/search?q=${encodeURIComponent(
+          query
+        )}`
       );
       if (!response.ok) {
         throw new Error('Network response was not ok');
