@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Toronto Vision",
-  description: "Toronto Vision - a Team J production.",
+  title: "Unsearchable TO",
+  description: "Unsearchable TO - a Team J production.",
 };
 
 export default function RootLayout({
