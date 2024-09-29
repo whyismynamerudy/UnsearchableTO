@@ -19,6 +19,11 @@ const CameraUpload: React.FC = () => {
     }
   };
 
+  const handleClose = () => {
+    setIsCameraOpen(false);
+    setImage(null);
+  };
+
   return (
     <div className='relative'>
       {!isCameraOpen && (
@@ -70,7 +75,7 @@ const CameraUpload: React.FC = () => {
             )}
 
             <button
-              onClick={() => setIsCameraOpen(false)}
+              onClick={() => handleClose()}
               className='absolute top-2 right-2 text-white bg-red-500 rounded-full w-8 h-8 flex items-center justify-center'
             >
               ✖️
