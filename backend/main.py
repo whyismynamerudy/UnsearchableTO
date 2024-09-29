@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Tuple
 from pydantic import BaseModel, Field
 from config import settings
 from supabase_settings import supabase_client
@@ -157,11 +158,16 @@ async def search(q: str = Query(..., min_length=1, max_length=100)):
         embedding = res.embeddings.float[0]
 
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
-        result_ids = docs.query(
+        results_from_query = docs.query(
             data=embedding,
-            limit=5,
+            limit=100,
             measure="cosine_distance",
+            include_value=True, 
         )
+        # results_from_query is a list of tuples, where each tuple[0] contains the result ID and each tuple[1] contains the cosine similarity
+        print(results_from_query)
+        result_ids = [result[0] for result in results_from_query]
+        similarity_scores = [1 - result[1] for result in results_from_query]  # Convert distance to similarity
 
     results = (
         supabase_client.table("street_view_images")
@@ -169,7 +175,17 @@ async def search(q: str = Query(..., min_length=1, max_length=100)):
         .in_("image_id", result_ids)
         .execute()
     )
-    return {"results": results.data}
+    # Prepare heatmap data
+    heatmap_data: List[Tuple[float, float, float]] = []
+    for result, score in zip(results.data, similarity_scores):
+        heatmap_data.append((
+            result['latitude'],
+            result['longitude'],
+            score  # Use similarity score as weight
+        ))
+
+    return {"results": results.data,
+            "heatmap_data": heatmap_data}
 
 
 if __name__ == "__main__":
