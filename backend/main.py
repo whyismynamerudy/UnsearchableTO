@@ -154,7 +154,7 @@ async def search(q: str = Query(..., min_length=1, max_length=100)):
         docs = vx.get_or_create_collection(name="image_embeddings", dimension=1024)
         results_from_query = docs.query(
             data=embedding,
-            limit=5,
+            limit=100,
             measure="cosine_distance",
             include_value=True, 
         )
