@@ -3,7 +3,7 @@ import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import React from 'react';
 import MapSheet from './MapSheet';
 
-interface userLocation {
+interface UserLocation {
   lat: number;
   lng: number;
 }
@@ -19,10 +19,10 @@ const center = {
 };
 
 const torontoBounds = {
-  north: 43.855401, // Northern boundary near Vaughan
-  south: 43.581024, // Southern boundary near Lake Ontario
-  west: -79.639219, // Western boundary near Mississauga
-  east: -79.116897, // Eastern boundary near Scarborough/Pickering
+  north: 43.855401,
+  south: 43.581024,
+  west: -79.639219,
+  east: -79.116897,
 };
 
 const options = {
@@ -44,19 +44,23 @@ const Map: React.FC<MapProps> = ({ markers }) => {
       'AIzaSyBF_kCwkH7r0-45lFxzulNbbqNZGYeLWv8',
   });
 
-  const [map, setMap] = React.useState<google.maps.Map | null>(null); // eslint-disable-line
-  const [userLocation, setUserLocation] = React.useState<userLocation | null>();
+  const [map, setMap] = React.useState<google.maps.Map | null>(null);
+  const [userLocation, setUserLocation] = React.useState<UserLocation | null>(
+    null
+  );
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [selectedContent, setSelectedContent] =
+    React.useState<MarkerDetails | null>(null);
 
   const success = (position: GeolocationPosition) => {
-    console.log(position);
     setUserLocation({
       lat: position.coords.latitude,
       lng: position.coords.longitude,
     });
   };
 
-  const error = (error: GeolocationPositionError) => {
-    console.log(error);
+  const error = (err: GeolocationPositionError) => {
+    console.error('Geolocation error:', err);
   };
 
   const onLoad = React.useCallback((map: google.maps.Map) => {
@@ -68,52 +72,40 @@ const Map: React.FC<MapProps> = ({ markers }) => {
     setMap(null);
   }, []);
 
-  const [selectedContent, setSelectedContent] =
-    React.useState<MarkerDetails | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
-
   const handleMarkerClick = (content: MarkerDetails) => {
-    setSelectedContent(content); // Set the selected content to be displayed in the sheet
-    setIsSheetOpen(true); // Open the sheet
+    setSelectedContent(content);
+    setIsSheetOpen(true);
   };
 
   const handleClose = () => {
-    setSelectedContent(null); // Reset the selected content when closing
-    setIsSheetOpen(false); // Close the sheet
+    setSelectedContent(null);
+    setIsSheetOpen(false);
   };
 
-  const [markersLoaded, setMarkersLoaded] = React.useState(false);
-
+  // Get user location on component mount
   React.useEffect(() => {
-    if (markers && markers.length > 0) {
-      navigator.geolocation.getCurrentPosition(success, error);
-      setMarkersLoaded(true); // Markers are now loaded
-    }
-  }, [markers]);
+    navigator.geolocation.getCurrentPosition(success, error);
+  }, []);
 
+  // Panning to user location when userLocation is updated
   React.useEffect(() => {
-    if (map && markersLoaded && markers && userLocation) {
+    if (map && userLocation) {
       const { lat, lng } = userLocation;
-
-      if (lat !== undefined && lng !== undefined) {
-        // Ensure both lat and lng are defined
-        if (map.getZoom() !== 14) {
-          map.setZoom(14);
-        }
-        map.panTo({ lat, lng });
-      }
+      map.setZoom(17);
+      map.panTo({ lat, lng });
     }
-  }, [map, markersLoaded, markers, userLocation]);
+  }, [map, userLocation, markers]);
 
-  return isLoaded ? (
+  return isLoaded && userLocation ? (
     <GoogleMap
       mapContainerStyle={containerStyle}
-      center={center}
-      zoom={0}
+      center={userLocation || center}
+      zoom={14}
       onLoad={onLoad}
       onUnmount={onUnmount}
       options={options}
     >
+      {/* Render markers from the provided data */}
       {markers?.map((marker, index) => (
         <Marker
           key={index}
@@ -121,6 +113,18 @@ const Map: React.FC<MapProps> = ({ markers }) => {
           onClick={() => handleMarkerClick(marker)}
         />
       ))}
+
+      {/* Render user location marker if userLocation is available */}
+      {userLocation && (
+        <Marker
+          position={userLocation}
+          icon={{
+            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+          }}
+        />
+      )}
+
+      {/* Display a sheet for selected marker content */}
       {selectedContent && (
         <MapSheet
           isOpen={isSheetOpen}
