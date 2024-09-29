@@ -4,7 +4,9 @@ import Map from '@/components/Map';
 import SearchBar from '@/components/SearchBar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
+import torontoLogo from './icons/toronto_logo.png';
 
 export interface MarkerDetails {
   image_id: string;
@@ -78,8 +80,18 @@ export default function Home() {
     <div className='flex flex-col h-screen'>
       <header className='bg-white shadow-lg z-20'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between'>
-          <h1 className='text-3xl font-bold text-black'>TorontoVision</h1>
-          <div className='text-xl font-medium text-[#2d3748]'>
+          <div className='flex flex-row items-center'>
+            <Image
+              src={torontoLogo}
+              alt='Toronto Logo'
+              width={40} // Adjust width as needed
+              height={40} // Adjust height as needed
+              className='mr-2' // Margin to separate the logo from the text
+            />
+            <h1 className='text-3xl font-bold text-black'>TorontoVision</h1>
+          </div>
+
+          <div className='text-xl font-bold italic text-[#2d3748]'>
             511k+ views indexed
           </div>
         </div>

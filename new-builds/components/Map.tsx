@@ -21,10 +21,10 @@ const center = {
 };
 
 const torontoBounds = {
-  north: 43.670535,
-  south: 43.637794,
-  west: -79.403619,
-  east: -79.374303,
+  north: 43.67323, // Increased north
+  south: 43.635099, // Decreased south
+  west: -79.407148, // Decreased west
+  east: -79.370774, // Increased east
 };
 
 const options = {
