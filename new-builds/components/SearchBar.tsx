@@ -47,7 +47,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               placeholder='Search locations...'
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className='pl-10 pr-4 py-2 w-full text-sm md:text-base bg-white text-gray-800 border-gray-300 rounded-lg'
+              className='pl-10 pr-4 py-2 w-full text-sm md:text-lg bg-white text-gray-800 border-gray-300 rounded-lg'
             />
           </div>
           <Button
