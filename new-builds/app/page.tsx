@@ -90,7 +90,7 @@ export default function Home() {
             />
             <h1 className='text-3xl font-bold text-black'>UnsearchableTO</h1>
           </div>
-          <div className='text-xl font-bold italic text-[#2d3748]'>
+          <div className='text-sm md:text-xl font-bold italic text-[#2d3748]'>
             511k+ objects indexed
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function Home() {
         )}
 
         {/* Overlay content */}
-        <div className='pb-4 absolute top-10 left-10'>
+        <div className='pb-4 absolute bottom-10 left-1/2 transform -translate-x-1/2 lg:top-10 lg:left-10 lg:transform-none'>
           <div className='flex space-x-4'>
             <div
               onClick={() => handleToggle('markers')}
