@@ -13,7 +13,7 @@
 
 <br>
 
-**We made the entire city of Toronto searchable with over half a million objects. Whether you're looking for street art, violet flowers, rusty bridges, or even some benches next to a tree (cool benchmark right?) - we've got you covered!**
+**We made the entire city of Toronto searchable with over half a million objects. Whether you're looking for street art, violet flowers, rusty bridges, or even some benches next to a tree - we've got you covered!**
 
 <br>
 
