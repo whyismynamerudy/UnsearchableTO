@@ -15,7 +15,7 @@ MAPPINGS_FILE = Path("image_mappings.json")
 
 
 def fetch_image_data():
-    url = "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_without_description"
+    url = f"{settings.BACKEND_URL}/street_view_images_without_description"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch image data: {response.status_code}")

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str
     SUPABASE_KEY: str
     DB_CONNECTION_STRING: str
+    BACKEND_URL: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

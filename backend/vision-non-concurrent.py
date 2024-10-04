@@ -32,7 +32,7 @@ async def create_model():
 
 
 async def fetch_image_data():
-    url = "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_without_description"
+    url = f"{settings.BACKEND_URL}/street_view_images_without_description"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status != 200:
