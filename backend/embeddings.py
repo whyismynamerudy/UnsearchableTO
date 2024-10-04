@@ -8,7 +8,7 @@ import time
 
 def load_captions():
     response = requests.get(
-        "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_with_description"
+        "https://new-builds-2024-818004117691.us-central1.run.app/street_view_images_without_embeddings"
     )
     if response.status_code == 200:
         return response.json()
