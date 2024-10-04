@@ -56,7 +56,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        `https://new-builds-2024-818004117691.us-central1.run.app/search?q=${encodeURIComponent(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/search?q=${encodeURIComponent(
           query
         )}`
       );
