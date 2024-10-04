@@ -3,21 +3,21 @@
 # UnsearchableTO 🔍🏙️
 [![Made with Cursor](https://img.shields.io/badge/Made%20with-Cursor-4E4FEB?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.sh)
 [![Powered by Claude 3.5 Sonnet](https://img.shields.io/badge/Powered%20by-Claude%203.5%20Sonnet-F9CB9C?style=for-the-badge&logo=anthropic&logoColor=black)](https://www.anthropic.com)
-[![Embedding by Cohere](https://img.shields.io/badge/Embedding%20by-Cohere-40C057?style=for-the-badge&logo=cohere&logoColor=white)](https://cohere.ai)
+[![Embedding by Cohere](https://img.shields.io/badge/Embedding%20by-Cohere-f795ff?style=for-the-badge&logo=cohere&logoColor=white)](https://cohere.ai)
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
-[![Captioned with Gemini](https://img.shields.io/badge/Captioned%20with-Gemini-FF0000?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![Captioned with Gemini](https://img.shields.io/badge/Captioned%20with-Gemini-EA4335?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![Powered by Supabase](https://img.shields.io/badge/Powered%20by-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 </div>
 
 ---
 
 <br>
 
-**We made the entire city of Toronto searchable with over half a million objects. Whether you're looking for street art, violet flowers, rusty bridges, or even some benches next to a tree - we've got you covered!**
+**We made the entire city of Toronto searchable with over half a million objects. Whether you're looking for street art, violet flowers, rusty bridges, or even some benches next to a tree (cool benchmark right?) - we've got you covered!**
 
 <br>
 
-![323](https://github.com/user-attachments/assets/c0732b94-92b8-45ae-976a-51c74e45df5b)
-
+[![323](https://github.com/user-attachments/assets/c0732b94-92b8-45ae-976a-51c74e45df5b)](https://unsearchableto.com/)
 
 
 <br>
@@ -30,7 +30,7 @@
 
 <br>
 
-## 👥 Authors
+## 👥 Creators
 
 This project was brought to life by an incredible team:
 
@@ -54,4 +54,6 @@ Your support and organization made this possible!
 
 ---
 
+<div align="center">
 Made with ❤️ in Toronto 🍁
+</div>
