@@ -2,7 +2,7 @@
 
 # UnsearchableTO 🔍🏙️
 [![Made with Cursor](https://img.shields.io/badge/Made%20with-Cursor-4E4FEB?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.sh)
-[![Powered by Claude 3.5 Sonnet](https://img.shields.io/badge/Coded%20by-Claude%203.5%20Sonnet-F9CB9C?style=for-the-badge&logo=anthropic&logoColor=black)](https://www.anthropic.com)
+[![Powered by Sonnet 3.5](https://img.shields.io/badge/Coded%20by-Sonnet%203.5-F9CB9C?style=for-the-badge&logo=anthropic&logoColor=black)](https://www.anthropic.com)
 [![Embedding by Cohere](https://img.shields.io/badge/Embedding%20by-Cohere-f795ff?style=for-the-badge&logo=cohere&logoColor=white)](https://cohere.ai)
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 [![Captioned with Gemini](https://img.shields.io/badge/Captioned%20with-Gemini-EA4335?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
