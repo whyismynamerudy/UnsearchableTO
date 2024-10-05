@@ -24,8 +24,8 @@
 
 ## 🛠️ How It Works
 
-1. **Data Collection**: We scraped all of Google Street View images for Toronto.
-2. **AI-Powered Captioning**: Leveraged Gemini Flash to generate captions for each image.
+1. **Data Collection**: Scraped all of Google Street View images for Toronto.
+2. **AI-Powered Captioning**: Leveraged Gemini Flash to generate detailed captions for each image.
 3. **Embedding & Search**: Utilized Cohere's powerful embedding technology to make everything searchable.
 
 <br>
